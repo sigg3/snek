@@ -280,10 +280,11 @@ def draw_map(mapscreen):
     
     for y in range(zompy_settings['height']):
         for x in range(zompy_settings['width']):
-            if zompy_map[x,y][0] == zompy_settings['intBorn']:
+            map_resident_is = zompy_map[x,y][0]
+            if map_resident_is == zompy_settings['intBorn']:
                 draw_char = zompy_settings['chBorn']
                 draw_color = 3
-            elif zompy_map[x,y][0] == zompy_settings['intLife']:
+            elif map_resident_is == zompy_settings['intLife'] or map_resident_is == zompy_settings['intStat']:
                 draw_char = zompy_settings['chLife']
                 draw_color = 2
             else:
