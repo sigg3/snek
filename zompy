@@ -322,17 +322,29 @@ def check_collision(input_snake):
         if coll_obj > zompy_settings['intDead']: # fast
             # TODO: check what type of item it is, we can perhaps eat some..?
             if coll_obj > zompy_settings['intStat']:
-                pass # we can eat
-            elif coll_obj == 
-                           
-            
-            
-            if snake.damage(input_snake) > 0:
+                size_modifier = 1 # USE GROW INSTEAD OF DAMAGE TODO
                 input_snake.collision = False
+            elif coll_obj == zompy_settings['intStat']:
+                input_snake.collision = False if snake.damage(2) > 0 else input_snake.collision = True # returns current size after size modification
             else:
-                input_snake.collision = True
+                input_snake.collision = False if snake.damage(1) > 0 else input_snake.collision = True # returns current size after size modification
             break # No need to continue loop
     return input_snake.collision
+
+
+
+    # zompy_settings['intDead'] = 0
+    # zompy_settings['intLife'] = 1
+    # zompy_settings['intBorn'] = 2
+    # zompy_settings['intSnek'] = -1 # must be less than dead to allow >0 comparisons (faster).
+    # zompy_settings['intStat'] = 3 # static block
+
+
+
+
+
+
+
 
 
 def update_map(input_snake_1, input_snake_2):
