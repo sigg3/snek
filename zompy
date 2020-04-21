@@ -271,13 +271,13 @@ def spawn_map(screen):
     for limit in range(zompy_settings['zombiesToAdd']*10):
         x = random.randint(0,xmax)
         y = random.randint(0,ymax)
-        zompy_map[x,y] = (zompy_settings['intLife'],0)
+        zompy_map[x,y] = (zompy_settings['intLife'],0) # set both category and age at once
         zompy_settings['genesisAlive'] += 1 # count undead
 
     # Fill in the blanks with "dead" cells (Conway)
     for x in range(xmax):
         for y in range(ymax):
-            zompy_map.setdefault((x,y), (zompy_settings['intDead'],0))
+            zompy_map.setdefault((x,y), (zompy_settings['intDead'],0)) # set category and age at once
             
 #            try:
 #                zompy_map[x,y]
@@ -294,8 +294,8 @@ def draw_map(mapscreen):
 #    mapscreen.addstr(0,0, 'function draw_map(mapscreen) executed') # debug
 #    debug_char = mapscreen.getch() # debug
     
-    for y in range(0,zompy_settings['height']):
-        for x in range(0,zompy_settings['width']):
+    for y in range(zompy_settings['height']):
+        for x in range(zompy_settings['width']):
             if zompy_map[x,y] == zompy_settings['intBorn']:
                 draw_char = zompy_settings['chBorn']
                 draw_color = 3
@@ -315,11 +315,18 @@ def draw_map(mapscreen):
                 mapscreen.addstr(y, x, draw_char)
 
 def check_collision(input_snake):
-    # Checks whether any zombies have eaten the snake specified
-    # Changes input_snake.collision_detected to True if that is the case
-    for block in range(0,input_snake.length()):
-        if zompy_map[input_snake.body[block]] > zompy_settings['intDead']:
+    '''Checks whether any zombies have collided with input_snake.
+    Changes input_snake.collision_detected to True if that is the case'''
+    for block in range(input_snake.length()):
+        coll_obj = zompy_map[input_snake.body[block]][0]
+        if coll_obj > zompy_settings['intDead']: # fast
             # TODO: check what type of item it is, we can perhaps eat some..?
+            if coll_obj > zompy_settings['intStat']:
+                pass # we can eat
+            elif coll_obj == 
+                           
+            
+            
             if snake.damage(input_snake) > 0:
                 input_snake.collision = False
             else:
@@ -332,7 +339,7 @@ def update_map(input_snake_1, input_snake_2):
     # Updates existing map, raise alert if there's an attack (zombie eating snake)
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
-    coAlive, coBirth, coDead, coControl = conway(zompy_settings['width'],zompy_settings['height'])
+    coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
 
     
     # Check collision
@@ -385,21 +392,23 @@ def update_map(input_snake_1, input_snake_2):
                     xpos = random.randint(0,zompy_settings['width'])
 
                     # See if the zone is empty (required)
-                    if zompy_map.setdefault((xpos,ypos), zompy_settings['intDead']) == zompy_settings['intDead']: # bugfix. later resolved in spawn_map() by using dict.clear()
+                    if zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))[0] == zompy_settings['intDead']: # bugfix. later resolved in spawn_map() by using dict.clear()
                         
                         # Must make sure to avoid placing obstacle right in front of snake
                         # We can use these from snake class:  self.x, self.y, self.dir
                         if (xpos, ypos) != (front_of_snake[0], front_of_snake[1]):
                             if zompy_settings['singleplayer']:
-                                zompy_map[xpos,ypos] = zompy_settings['intBorn'] # So romantic
+                                zompy_map[xpos,ypos] = (zompy_settings['intBorn'],0) # So romantic
+                                coBirth += 1
                                 break
                             elif input_snake_2 is not None:
                                 if (xpos, ypos) != (front_of_snake[2], front_of_snake[3]):
-                                    zompy_map[xpos,ypos] = zompy_settings['intBorn'] # So romantic
+                                    zompy_map[xpos,ypos] = (zompy_settings['intBorn'],0) # So romantic
+                                    coBirth += 1
                                     break
     
     # Update stats string (if enabled)
-    if zompy_settings['stats']:zompy_settings['stats_str'] = f"gen:{zompy_settings['countGenerations']}  zombies:{coAlive}  spawns:{coBirth}  stability:{zompy_settings['stabilityRecord']}  size:{input_snake_1.size}" # TODO
+    if zompy_settings['stats']:zompy_settings['stats_str'] = f"gen:{zompy_settings['countGenerations']}  blocks:{coStat}  cell:{coAlive}  spawns:{coBirth}  stability:{zompy_settings['stabilityRecord']}  size:{input_snake_1.size}" # TODO
     
     # debug 
     # output map to local file map.txt for debugging
@@ -417,6 +426,7 @@ def conway(xmax, ymax):
     countAlive = 0
     countBirth = 0
     countDead = 0
+    countStatic = 0 # TODO
     countControl = 0
     
     for x in range(xmax):
@@ -434,21 +444,27 @@ def conway(xmax, ymax):
                 for xval in leftCoord, rightCoord,x:
                     if xval == x and yval == y :
                         continue
-                    if zompy_map[xval,yval] == 1:
+                    if zompy_map[xval,yval][0] == zompy_settings['intLife'] or zompy_map[xval,yval][0] == zompy_settings['intStat']:
                         numNeighbors += 1
 
             # set cell based on conway's rules
-            if zompy_map[x,y] > zompy_settings['intDead'] and ( numNeighbors == 2 or numNeighbors == 3 ):
-                zompy_map[x,y] = zompy_settings['intLife']
-                countAlive += 1
-            elif zompy_map[x,y] == zompy_settings['intDead'] and (numNeighbors == 3):
-                zompy_map[x,y] = zompy_settings['intBorn'] # BIRTH # re-animate
-                countBirth += 1
-            else:
-                zompy_map[x,y] = zompy_settings['intDead'] # die or stay dead
-                countDead += 1
-    countControl = countAlive + countBirth + countDead
-    return countAlive, countBirth, countDead, countControl
+            if zompy_map[x,y][0] != zompy_settings['intStat']:
+                if zompy_map[x,y][0] > zompy_settings['intDead'] and numNeighbors >= 2 :
+                    cell_age = zompy_map[x,y][1] + 1
+                    zompy_map[x,y] = (zompy_settings['intLife'], cell_age)
+                    if cell_age > zompy_settings['staticThreshold']:
+                        zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
+                        countStatic += 1
+                    else:
+                        countAlive += 1
+                elif zompy_map[x,y][0] == zompy_settings['intDead'] and (numNeighbors == 3):
+                    zompy_map[x,y] = (zompy_settings['intBorn'],0) # BIRTH # re-animate, age is 0
+                    countBirth += 1
+                else:
+                    zompy_map[x,y] = (zompy_settings['intDead'], 0) # die or stay dead
+                    countDead += 1
+    countControl = countAlive + countBirth + countDead + countStatic
+    return countAlive, countBirth, countDead, countStatic, countControl
 
 
 class snake:
@@ -507,8 +523,9 @@ class snake:
         snake_dir = None
         while snake_dir is None:
             snake_ypos = random.randint(0,zompy_settings['height'])
-            snake_xpos = random.randint(0,zompy_settings['width'])    
-            if zompy_map[snake_xpos,snake_ypos] == zompy_settings['intDead']:
+            snake_xpos = random.randint(0,zompy_settings['width'])
+            
+            if zompy_map.setdefault((snake_xpos,snake_ypos),(0,0))[0] == zompy_settings['intDead']:
                 # Set snake direction (as a rule everything is constantly moving)
                 # Whether we actually is moving depends on zompy_settings['movement']
                 snake_dir = pseudorand_one_to_four() # 1 = North, 2 = East, 3 = South, 4 = West
@@ -536,8 +553,8 @@ class snake:
     def erase(self):
         '''Removes tail bit of self.body by 1 from zompy_map'''
         tail_x, tail_y = self.body[self.size-1]
-        if zompy_map[tail_x,tail_y] == ['intSnek']:
-            zompy_map[tail_x,tail_y] = zompy_settings['intDead']
+        if zompy_map[tail_x,tail_y][0] == ['intSnek']:
+            zompy_map[tail_x,tail_y] = (zompy_settings['intDead'],0)
     
     def evaluate_direction(self, direction):
         # Evaluates key press to change is_moving to False if direction is opposite of self.dir
@@ -558,7 +575,7 @@ class snake:
         # Returns True if it's a collision
         # Checks map for any existing object on the spot
         try:
-            if zompy_map[self.head] > 0: return True
+            if zompy_map[self.head][0] > 0: return True
         except KeyError:
             debug_message(scr=screen, message=f'Got key error for self.head = \'{self.head}\'')
         return False
@@ -609,7 +626,7 @@ class snake:
         for bl in range(self.size-1,0,-1):
             # Set old map area vacant
             xpos, ypos = self.body[bl]
-            zompy_map[xpos,ypos] = zompy_settings['intDead']
+            zompy_map[xpos,ypos] = (zompy_settings['intDead'],0)
             
             # Move block after head
             tail = bl - 1
@@ -617,7 +634,7 @@ class snake:
             
             # Set new map area occupied
             xpos, ypos = self.body[tail]
-            zompy_map[xpos,ypos] = zompy_settings['intSnek']
+            zompy_map[xpos,ypos] = (zompy_settings['intSnek'],0)
 
         self.body[0] = self.head
     
@@ -639,16 +656,15 @@ class snake:
 
 
 def set_game_defaults():
+    '''Activates default config. Ran by default if __main__, and from settings menu (reset to defaults).
+    It does not write to config file.
+    In config_is_sane() defaults are used to initiate all values and check any config file inconsistency.
+    Since snek only has 1 global variable (zompy_settings) this function is central to the application.'''
+    
     # set default config (does not write to file)
     # ALL ACCEPTED VALUES MUST BE SET, otherwise config sanity checks will fail
 
-    # HARD CODED VALUES
-    # Map area vacancy classifiers
-    zompy_settings['intDead'] = 0
-    zompy_settings['intLife'] = 1
-    zompy_settings['intBorn'] = 2
-    zompy_settings['intSnek'] = -1 # must be less than dead to allow >0 comparisons (faster).
-    
+    # HARD CODED VALUES    
     # If true = show startup animation
     zompy_settings['welcome'] = False
     
@@ -659,7 +675,6 @@ def set_game_defaults():
         zompy_settings['debug']
     except KeyError:
         zompy_settings['debug'] = False
-    
     
     # Score for highscore
     zompy_settings['score'] = 0
@@ -683,6 +698,14 @@ def set_game_defaults():
 
     zompy_settings['limitSizeMin'] = 1
     zompy_settings['limitSizeMax'] = 6
+    
+    
+    # Map area categories
+    zompy_settings['intDead'] = 0
+    zompy_settings['intLife'] = 1
+    zompy_settings['intBorn'] = 2
+    zompy_settings['intSnek'] = -1 # must be less than dead to allow >0 comparisons (faster).
+    zompy_settings['intStat'] = 3 # static block
 
     # set default colors and ASCII chars
     # 0. Black
@@ -748,6 +771,7 @@ def set_game_defaults():
     zompy_settings['stabilityWas'] = ''
     zompy_settings['stabilityBefore'] = ''
     zompy_settings['zombiesToAdd'] = 300  # can also be related to "difficulty level" 
+    zompy_settings['staticThreshold'] = 5 # with age greater than 5, cell becomes static
     
     
     # Setting fallback snek symbols (overridden by set_zompy_visuals)
@@ -828,7 +852,7 @@ def set_zompy_visuals(style, color):
     # print_in(screen, attribute, xpos, ypos, string)
 
 def set_font(screen, attr, toggle_on):
-    # Short hand markup language like toggle (for curses)
+    '''Short hand markup language like toggle (for curses)'''
     if attr == 'b':
         screen.attron(curses.A_BOLD) if toggle_on else screen.attroff(curses.A_BOLD)
     elif attr == 'u':
@@ -876,7 +900,7 @@ def set_font(screen, attr, toggle_on):
 
 
 def screen_animation(screen, width, height):
-    # Start-up "animation"
+    '''Start-up "animation"'''
     if zompy_settings['color']:
         if zompy_settings['welcome']:
             sleepyt = 0.01
@@ -917,7 +941,7 @@ def screen_animation(screen, width, height):
 
 
 def screen_welcome(screen, width, height):
-    # Draw a friendly welcome screen/home menu
+    '''Draw a friendly welcome screen/home menu'''
     # Executed from within gameloop function (but outside the loop)
     
     # Draw header
@@ -942,13 +966,14 @@ def screen_welcome(screen, width, height):
 
 
 def return_opposite(bool_settings_val):
+    '''1/0 bool reversal for on/off toggle. Only works on ints 1 and 0.'''
     if bool_settings_val == 0:
         return 1
     elif bool_settings_val == 1:
         return 0
 
 def toggle_debug(screen, width):
-    # ON/OFF toggle debug (press p or P in menu or quick menu)
+    '''ON/OFF toggle debug (press p or P in menus)'''
     screen.addstr(2,width-10, 'DEBUG')
     if zompy_settings['debug']:
         zompy_settings['debug'] = False
@@ -960,6 +985,7 @@ def toggle_debug(screen, width):
     time.sleep(1)
 
 def debug_message(**kwargs):
+    '''Print a debug message and pause execution.'''
     # Get args (debug msgs and screen)
     message_1 = kwargs.get('msg', ' ')
     message_2 = kwargs.get('msg2', ' ')
@@ -972,11 +998,13 @@ def debug_message(**kwargs):
     scr.getch()
 
 def screen_settings(screen):
-    # Let user choose/toggle settings with arrow keys and ENTER
-    # Executed from within gameloop function (but outside the actual loop)
+    '''Settings menu that allows user to customize her game experience somewhat.
+    Choose setting with arrow keys and toggle with ENTER or input and ENTER.
+    Can be reached from the main menu or from quick menu (resets current game).
+    Hidden function: hit p/P to toggle debug on/off.'''
 
-    # menu structure
-    smenu = zompy_chsetmenu
+    # fetch menu structure
+    smenu = zompy_menu['settings']
 
     width, height = get_terminal_size()
     first_column = 4
@@ -984,6 +1012,7 @@ def screen_settings(screen):
     third_column = width // 2
     
     
+    # Should lookl like this, more or less..
     '''
     Settings
         Difficulty level           EASY / MEDIUM / HARD / CUSTOM
@@ -1492,6 +1521,10 @@ def screen_settings(screen):
 
 
 def get_wasd_input(key):
+    '''Determines output from curses input and returns that output.
+    Accepted outputs are 1-8 (arrow keys, wasd) and 0 (unknown/empty key).
+    In 1 player mode, player can choose from arrow keys or wasd.
+    In 2 player mode, 1 player has wasd and 2nd player arrow keys.'''
     # Takes curses input (key) and determine wasd output (or Unknown = 0)
     # If Two-Player mode, one has arrow keys and the other w,a,s,d
 
@@ -1514,6 +1547,7 @@ def get_wasd_input(key):
 
 
 def draw_popup(screen, from_y, from_x, to_y, to_x, refresh):
+    '''Draws a background of empty space using curses, then adds a unicode border frame.'''
     # From_y = top < to_y, from_x < to_x
     # Draws a background of empty spaces with border frame
     # Allows us to put menu "in front of" existing stuff without interfering
@@ -1550,9 +1584,10 @@ def draw_popup(screen, from_y, from_x, to_y, to_x, refresh):
 
 
 def draw_quickmenu(screen, selected, width, height, canvas_y_beg, canvas_y_end, canvas_x_beg, canvas_x_end):
+    '''Draws the quickmenu using curses. Called by screen_quickmenu()'''
     # First draw a background of empty spaces with +2 char padding
     # Instead of clearing the whole screen, fill canvas with spaces
-    qmenu = zompy_quickmenu
+    qmenu = zompy_menu['quick']
     
     # Draw empty canvas area
     draw_popup(screen, canvas_y_beg, canvas_x_beg, canvas_y_end, canvas_x_end, False)
@@ -1572,7 +1607,7 @@ def draw_quickmenu(screen, selected, width, height, canvas_y_beg, canvas_y_end, 
     screen.refresh()
 
 
-def game_over(screen,  width, height, snake_was_eaten):
+def game_over(screen,  width, height, snake_was_eaten): # TODO currently not in use..?
     # This is final (i.e. game over)
     # snake_was_eaten bool = True if snake was eaten by zombie, otherwise (user crashed = ) False
 
@@ -1583,10 +1618,10 @@ def game_over(screen,  width, height, snake_was_eaten):
     
 
 def screen_quickmenu(screen, width, height):
-    # This is the function we call to display a quick menu (within game loop)
+    '''Pauses the game clock and shows a quick menu.'''
     # local shorthand
-    qmenu = zompy_quickmenu
-    
+    qmenu =  zompy_menu['quick']
+        
     # Add penalty
     qmenu_idle_time = epoch_as_sec()
     
@@ -1810,6 +1845,9 @@ def draw_menu(screen, current, width, height):
     # This is the main menu (outside game loop)
     # This probably needs a rewrite / some adjustments .. TODO
     
+    # Set local handle
+    mmenu = zompy_menu['main']
+    
     # Put a header on top
     draw_header(screen, 'S n e k :: Snake & Adder')
     
@@ -1847,24 +1885,24 @@ def draw_menu(screen, current, width, height):
 
     # Find widest text in menu (necessary)
     txtwidth = 0
-    for idx, mtext in enumerate(zompy_main_menu):
+    for idx, mtext in enumerate(mmenu):
         if len(mtext) > txtwidth:
             txtwidth = len(mtext)
     
     # Put curses menu on right hand side
     xpos = (( width // 3 ) * 2) - 3
-    ypos = ( height // 2 ) - len(zompy_main_menu) + 4
+    ypos = ( height // 2 ) - len(mmenu) + 4
     
     
     # draw menu decor
     from_y = ypos - 2
-    to_y = ypos + len(zompy_main_menu) + 1
+    to_y = ypos + len(mmenu) + 1
     from_x = xpos - 2
     to_x = xpos + txtwidth + 3
     draw_popup(screen, from_y, from_x, to_y, to_x, False)    
     
     # Draw menu
-    for idx, mtext in enumerate(zompy_main_menu):
+    for idx, mtext in enumerate(mmenu):
         if idx == current:
             set_font(screen, 'rev', True)
             screen.addstr(ypos, xpos, mtext)
@@ -1877,8 +1915,11 @@ def draw_menu(screen, current, width, height):
 
 
 def screen_menu(screen, width, height):
-    # This is the game's main menu
-    mmenu = zompy_main_menu # Shorthand
+    '''Game main menu constructor. Uses draw_menu() for curses output.'''
+
+    # set shorthand
+    mmenu = zompy_menu['main']
+    
     mcurrent = 0
     
     while True:
@@ -1967,7 +2008,7 @@ def screen_about(screen, width, height):
     
 
 def draw_stats(screen, width, height):
-    '''Optional intrusive live stats overlay sourced by updated_map()'''
+    '''Optional and intrusive live stats overlay sourced by updated_map()'''
     if zompy_settings['stats_str'] is not None:
         ypos = height - 2
         stats = zompy_settings['stats_str']
@@ -1981,7 +2022,7 @@ def draw_stats(screen, width, height):
 
 
 def press_any_key(screen, width, height):
-    # Overwrites bottom line of screen with blank spaces and puts 'press any key' text
+    '''Overwrites and prints "press any key" at height-1 and halts until user presses any key'''
     status_message(screen, width, height, 'Press any key to continue')
     
     # Draw on screen object
@@ -2003,8 +2044,9 @@ def status_message(screen, width, height, message):
 
 
 def screen_highscore(screen, score, rank, width, height):
-    # Show highscore + special message if score in top 3 
-    # Remember: Function can be called outside loop too (score = rank = 0)
+    '''Display highscore screen.
+    There are 2 points of entry: after game (show related message) or from main menu.
+    If called from outside of "game over" process, score and rank should be int 0.'''
  
     # debug
     if zompy_settings['debug']: debug_message(scr=screen, msg=f'rank is {rank}')
@@ -2548,15 +2590,22 @@ def gameloop(screen):
 if __name__ == '__main__':
     print("Let's play Snek!")
 
-    # Initiate settings and map
+    # Initiate settings dict
     # Mutables (dict, lists) behave like globals without the 'global' keyword
+    # zompy_settings contains game parameters, current game values and menu structures
     zompy_settings = {}
+    
+    # Setup menu dict
+    zompy_menu = {
+    'quick': ['Continue', 'Toggle Stats', 'Restart', 'Settings', 'Exit'],
+    'main': ['Play', 'Highscores', ' ', 'Settings', 'About', ' ', 'Exit'],
+    'settings': ['Settings', 'Difficulty level', 'Speed (seconds)', 'Initial Snake Size', 'Zombies to add', ' ', ' ', 'Gameplay', 'Two-Player Mode', 'Start in motion', 'Reset on terminal size', ' ', ' ', 'Visual', 'Stats overlay', 'Style']
+    }
+    
+    # Initiate Map dictionary
+    # keys are tuple of X and Y coordinates, and values are tuple of category and cell age
+    # e.g. zompy_map[x,y] = (1,3)  ==  3 rounds old living cell (1) at x and y position
     zompy_map = {}
-
-    # Menu constructs as lists
-    zompy_quickmenu = ['Continue', 'Toggle Stats', 'Restart', 'Main Menu', 'Exit']
-    zompy_main_menu = ['Play', 'Highscores', ' ', 'Settings', 'About', ' ', 'Exit']
-    zompy_chsetmenu = ['Settings', 'Difficulty level', 'Speed (seconds)', 'Initial Snake Size', 'Zombies to add', ' ', ' ', 'Gameplay' , 'Two-Player Mode', 'Start in motion', 'Reset on terminal size', ' ', ' ', 'Visual', 'Stats overlay', 'Style']        
 
     # Set configuration file absolute path
     if Path(Path.home()/Path('.config')).is_dir():
