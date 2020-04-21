@@ -27,7 +27,7 @@ from pathlib import Path
 # time      for game flow (otherwise everything happens too fast)
 # sys       for sys.exit() since Raise systemexit did not work :P
 
-# TODO
+# TODO edge bug
 # must fix wall-bug (-1 on traversing screen edges. ridiculous.)
 
 # TODO
@@ -281,6 +281,19 @@ def draw_map(mapscreen):
     # Draws the map saved in zompy_map dict
     # For dimensions, draw chars (note: curses start at 0,0 and not 1,1 like our dict) # TODO
     
+    # legend
+    # zompy_settings['colorBack'] = 0
+    # zompy_settings['colorLife'] = 1
+    # zompy_settings['colorBorn'] = 3
+    # zompy_settings['colorSnek'] = 2
+    # zompy_settings['colorDead'] = zompy_settings['colorBack']
+    # zompy_settings['colorNice'] = 6
+    # zompy_settings['colorOne'] = zompy_settings['colorSnek']
+    # zompy_settings['colorTwo'] = zompy_settings['colorNice']
+    # zompy_settings['colorAppl'] = 2 # use green to begin with
+    
+    
+    
     # debug
 #    mapscreen.addstr(0,0, 'function draw_map(mapscreen) executed') # debug
 #    debug_char = mapscreen.getch() # debug
@@ -290,13 +303,16 @@ def draw_map(mapscreen):
             map_resident_is = zompy_map[x,y][0]
             if map_resident_is == zompy_settings['intBorn']:
                 draw_char = zompy_settings['chBorn']
-                draw_color = 3
+                draw_color = zompy_settings['colorBorn']
             elif map_resident_is == zompy_settings['intLife'] or map_resident_is == zompy_settings['intStat']:
                 draw_char = zompy_settings['chLife']
-                draw_color = 2
+                draw_color = zompy_settings['colorLife']
+            elif map_resident_is == zompy_settings['intAppl']:
+                draw_char = zompy_settings['chAppl']
+                draw_color = zompy_settings['colorAppl']
             else:
                 draw_char = zompy_settings['chDead'] # Draw dead in else statement to over-write "ghosts"
-                draw_color = 1
+                draw_color = zompy_settings['colorDead']
                 
             # execute addstr
             if zompy_settings['color']:
@@ -348,6 +364,23 @@ def update_map(input_snake_1, input_snake_2):
     # TODO allow for check of input_nake_2
     
     if not check_collision(input_snake_1):
+        if zompy_settings['applesEnabled']:
+            # Check if there are apples
+            apples = 0
+            for cell in zompy_map.values():
+                if cell[0] == zompy_settings['intAppl']: apples += 1
+            
+            # If not, add 1 or 2
+            if not apples:
+                apple_count = 1 + pseudorand() # 1 or 2
+                for just_another_apple_themed_variable_name in range(apple_count):
+                    while True:
+                        ypos = random.randint(0,zompy_settings['height'])
+                        xpos = random.randint(0,zompy_settings['width'])
+                        if zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))[0] == zompy_settings['intDead']:
+                            zompy_map[xpos,ypos] = (zompy_settings['intAppl'],1) # put apple here
+        
+        
         # If we (zombies) are not attacking the snake, check stability
         # See if we've reached Conway's GOL Stability Plateau
         zompy_settings['stabilityIs'] = str(coAlive) + '-' + str(coBirth) + '-' + str(coDead)
@@ -581,7 +614,8 @@ class snake:
         # Returns True if it's a collision
         # Checks map for any existing object on the spot
         try:
-            if zompy_map.setdefault((self.x,self.y),(zompy_settings['intDead'],0))[0] > 0: return True
+            if zompy_map.setdefault((self.x,self.y),(zompy_settings['intDead'],0))[0] > 0:
+                return True # TODO, we must distinguish between types of objects
         except KeyError:
             debug_message(scr=screen, message=f'Got key error for self.head = \'{self.head}\'')
         return False
@@ -742,13 +776,15 @@ def set_game_defaults():
     zompy_settings['colorNice'] = 6
     zompy_settings['colorOne'] = zompy_settings['colorSnek']
     zompy_settings['colorTwo'] = zompy_settings['colorNice']
+    zompy_settings['colorAppl'] = 2 # use green to begin with
+    
     
     # Booleans and operators for loop control
     zompy_settings['player_has_moved'] = False # obsolete
     zompy_settings['key_press'] = False # bool = key was pressed or not
     zompy_settings['uinput'] = ''       # str = what key was pressed
     zompy_settings['actionOnStable'] = 'exit' # currently not in use, obsolete
-    
+    zompy_settings['applesEnabled'] = True # TODO
 
     # USER-CHANGEABLE VALUES
     # Toggle two-player multiplayer
@@ -800,17 +836,20 @@ def set_zompy_visuals(style, color):
         zompy_settings['chDead'] = ' ' # use transparent bkg
         zompy_settings['chBorn'] = ' ' # use color N-1 bkg (TODO)
         zompy_settings['chSnek'] = ' ' # use green bkg as symbol
+        zompy_settings['chAppl'] = ' '
     elif style == 'blocks' and color == False: # i.e. unicode
         zompy_settings['color'] = True # use color where available
         zompy_settings['chLife'] = chr(9632)
         zompy_settings['chDead'] = ' ' # empty space
         zompy_settings['chBorn'] = chr(9633)
         zompy_settings['chSnek'] = chr(9608)
+        zompy_settings['chAppl'] = 'A'
     elif style == 'ascii':
         zompy_settings['chLife'] = 'o'
         zompy_settings['chDead'] = ' '
         zompy_settings['chBorn'] = '.'
         zompy_settings['chSnek'] = '#'
+        zompy_settings['chAppl'] = 'A'
     else:
         die(err_code=2)
 
