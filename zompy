@@ -443,20 +443,20 @@ def conway(xmax, ymax):
 
             # set cell based on conway's rules
             if zompy_map[x,y][0] != zompy_settings['intStat']:
-                if zompy_map[x,y][0] > zompy_settings['intDead'] and numNeighbors >= 2 :
-                    cell_age = zompy_map[x,y][1] + 1
-                    zompy_map[x,y] = (zompy_settings['intLife'], cell_age)
-                    if cell_age > zompy_settings['staticThreshold']:
-                        zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
-                        countStatic += 1
-                    else:
-                        countAlive += 1
-                elif zompy_map[x,y][0] == zompy_settings['intDead'] and (numNeighbors == 3):
-                    zompy_map[x,y] = (zompy_settings['intBorn'],0) # BIRTH # re-animate, age is 0
-                    countBirth += 1
+                cell_age = zompy_map[x,y][1] + 1
+                if cell_age > zompy_settings['staticThreshold']:
+                    zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
+                    countStatic += 1
                 else:
-                    zompy_map[x,y] = (zompy_settings['intDead'], 0) # die or stay dead
-                    countDead += 1
+                    if zompy_map[x,y][0] > zompy_settings['intDead'] and (numNeighbors == 2 or numNeighbors == 3):
+                        zompy_map[x,y] = (zompy_settings['intLife'], cell_age)
+                        countAlive += 1
+                    elif zompy_map[x,y][0] == zompy_settings['intDead'] and (numNeighbors == 3):
+                        zompy_map[x,y] = (zompy_settings['intBorn'],1) # BIRTH # re-animate, age is 0
+                        countBirth += 1
+                    else:
+                        zompy_map[x,y] = (zompy_settings['intDead'], 0) # die or stay dead
+                        countDead += 1
     countControl = countAlive + countBirth + countDead + countStatic
     return countAlive, countBirth, countDead, countStatic, countControl
 
@@ -569,7 +569,7 @@ class snake:
         # Returns True if it's a collision
         # Checks map for any existing object on the spot
         try:
-            if zompy_map[self.head][0] > 0: return True
+            if zompy_map.setdefault((self.x,self.y),(zompy_settings['intDead'],0))[0] > 0: return True
         except KeyError:
             debug_message(scr=screen, message=f'Got key error for self.head = \'{self.head}\'')
         return False
@@ -592,6 +592,8 @@ class snake:
     
     def slither_snake(self):
         # This function places tail after body (it slithers)
+        # TODO handle wall-bug: when we move > xmax, wrap causes tail to disappear (might be in a different def too.)
+        # There's a bug here
         if self.is_moving:
             xmax = zompy_settings['width']
             ymax = zompy_settings['height']
@@ -767,7 +769,7 @@ def set_game_defaults():
     zompy_settings['stabilityWas'] = ''
     zompy_settings['stabilityBefore'] = ''
     zompy_settings['zombiesToAdd'] = 300  # can also be related to "difficulty level" 
-    zompy_settings['staticThreshold'] = 5 # with age greater than 5, cell becomes static
+    zompy_settings['staticThreshold'] = 5 # with age greater than N, cell becomes static
     
     
     # Setting fallback snek symbols (overridden by set_zompy_visuals)
