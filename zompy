@@ -27,24 +27,8 @@ from pathlib import Path
 # time      for game flow (otherwise everything happens too fast)
 # sys       for sys.exit() since Raise systemexit did not work :P
 
-# TODO conway
-# instead of a bool, we have 4 categories: dead, born, alive, static
-#    Static cells remain there until game over. An alive cell becomes static if it survives N rounds.
-# static cells grow like cancer. this makes the game harder and harder.
-
-# TODO age
-# zompy_map dict consist of zompy_map[x,y] = (category, age)
-# where age 
-
-# >>> zompy_map
-# {(4, 3): (1, 0)}
-# >>> zompy_map[4,3]
-# (1, 0)
-# >>> zompy_map[4,3][0] # how to read category
-# 1
-# >>> zompy_map[4,3][1] # how to read age
-# 0
-
+# TODO
+# Pydoc challenge: each func must have triple quote def at the top
 
 # TODO edibles
 # +1 size
@@ -296,10 +280,10 @@ def draw_map(mapscreen):
     
     for y in range(zompy_settings['height']):
         for x in range(zompy_settings['width']):
-            if zompy_map[x,y] == zompy_settings['intBorn']:
+            if zompy_map[x,y][0] == zompy_settings['intBorn']:
                 draw_char = zompy_settings['chBorn']
                 draw_color = 3
-            elif zompy_map[x,y] == zompy_settings['intLife']:
+            elif zompy_map[x,y][0] == zompy_settings['intLife']:
                 draw_char = zompy_settings['chLife']
                 draw_color = 2
             else:
@@ -715,6 +699,8 @@ def set_game_defaults():
     zompy_settings['intBorn'] = 2
     zompy_settings['intSnek'] = -1 # must be less than dead to allow >0 comparisons (faster).
     zompy_settings['intStat'] = 3 # static block
+    zompy_settings['intAppl'] = 4
+    
 
     # set default colors and ASCII chars
     # 0. Black
