@@ -28,6 +28,13 @@ from pathlib import Path
 # sys       for sys.exit() since Raise systemexit did not work :P
 
 # TODO
+# must fix wall-bug (-1 on traversing screen edges. ridiculous.)
+
+# TODO
+# ADD EDIBLE APPLE (SNAKE.GROW())   
+
+
+# TODO
 # Pydoc challenge: each func must have triple quote def at the top
 
 # TODO edibles
@@ -393,7 +400,7 @@ def update_map(input_snake_1, input_snake_2):
                         if (xpos, ypos) != (front_of_snake[0], front_of_snake[1]):
                             if zompy_settings['singleplayer']:
                                 
-                                if pseudorand == 0:
+                                if pseudorand() == 0:
                                     zompy_map[xpos,ypos] = (zompy_settings['intBorn'],0) # So romantic
                                     coBirth += 1
                                 else:
