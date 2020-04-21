@@ -392,8 +392,13 @@ def update_map(input_snake_1, input_snake_2):
                         # We can use these from snake class:  self.x, self.y, self.dir
                         if (xpos, ypos) != (front_of_snake[0], front_of_snake[1]):
                             if zompy_settings['singleplayer']:
-                                zompy_map[xpos,ypos] = (zompy_settings['intBorn'],0) # So romantic
-                                coBirth += 1
+                                
+                                if pseudorand == 0:
+                                    zompy_map[xpos,ypos] = (zompy_settings['intBorn'],0) # So romantic
+                                    coBirth += 1
+                                else:
+                                    zompy_map[xpos,ypos] = (zompy_settings['intLife'],1) # So romantic
+                                    coAlive += 1
                                 break
                             elif input_snake_2 is not None:
                                 if (xpos, ypos) != (front_of_snake[2], front_of_snake[3]):
