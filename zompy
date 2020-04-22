@@ -402,8 +402,9 @@ def update_map(input_snake_1, input_snake_2):
     # Updates existing map, raise alert if there's an attack (zombie eating snake)
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
+    
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
-
+    
     # Check collision
     # Allows us to do this for >1 snake later on
     # TODO allow for check of input_nake_2
@@ -430,7 +431,7 @@ def update_map(input_snake_1, input_snake_2):
         # If we (zombies) are not attacking the snake, check stability
         # See if we've reached Conway's GOL Stability Plateau
 #        zompy_settings['stabilityIs'] = str(coAlive) + '-' + str(coBirth) + '-' + str(coDead)
-        zompy_settings['stabilityIs'] = f'{coALive}-{coBirth}-{coDead}'
+        zompy_settings['stabilityIs'] = f'{coAlive}-{coBirth}-{coDead}'
         if zompy_settings['stabilityIs'] == zompy_settings['stabilityWas']:
             zompy_settings['stabilityRecord'] += 1
         elif zompy_settings['stabilityIs'] == zompy_settings['stabilityBefore']:
@@ -514,7 +515,7 @@ def conway(xmax, ymax):
     countAlive = 0
     countBirth = 0
     countDead = 0
-    countStatic = 0 # TODO
+    countStatic = 0
     countControl = 0
     
     for x in range(xmax):
