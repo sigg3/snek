@@ -61,8 +61,6 @@ from pathlib import Path
 # screen.border(0)
 
 
-
-
 # Note
 # Method can be called through instance (snek.move) or through a class snake.move(snek)!
 
@@ -279,10 +277,11 @@ def spawn_map(screen):
         y = random.randint(0,ymax)
         zompy_map[x,y] = (zompy_settings['intLife'],0) # set both category and age at once
         zompy_settings['genesisAlive'] += 1 # count undead
-
+    
     # Fill in the blanks with "dead" cells (Conway)
-    for x in range(xmax):
-        for y in range(ymax):
+    # Added +1 because range excludes limit int
+    for x in range(xmax+1):
+        for y in range(ymax+1):
             map_lookup(x,y) # sets category and age at once
                 
 #            try:
@@ -384,10 +383,12 @@ def map_lookup(xpos,ypos):
     '''Returns tuple of x,y key in zompy_map dict, and sets to default if empty.
     To lookup only 1st in tuple, use map_lookup(xpos,ypos)[0].
     Function works as a failsafe, in case zompy_map val has be unset elsewhere.'''
-    try:
-        zompy_map[xpos,ypos]
-    except KeyError:
-        debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
+    #breakpoint()
+#    try:
+#       zompy_map[xpos,ypos]
+#   except KeyError:
+#       print('hit a snag')
+#       debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
     
     return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
 
@@ -402,9 +403,7 @@ def update_map(input_snake_1, input_snake_2):
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
     
-    # debugging
-    breakpoint()
-    coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # 
+    coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # lazy workaround
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
     
     # Check collision
@@ -448,7 +447,7 @@ def update_map(input_snake_1, input_snake_2):
 
         # if too stable, shake things up a bit
         if zompy_settings['stabilityRecord'] > zompy_settings['stabilityThreshold']:
-            front_of_snake = [] # risky zones list. [0] is x [1] is y, index + 2 for 2nd snake
+            front_of_snake = [] # list containing risky zones. [0] is x, [1] is y, index + 2 for 2nd snake (adder)
             
             for check_snake in input_snake_1, input_snake_2:
                 if check_snake is None: break
@@ -535,7 +534,7 @@ def conway(xmax, ymax):
                 for xval in leftCoord, rightCoord,x:
                     if xval == x and yval == y : continue
                     xy_endval = map_lookup(xval,yval)[0]
-                    if xy_endval == zompy_settings['intLife'] or xy_endval == zompy_settings['intStat']:
+                    if xy_endval == zompy_settings['intLife']: # or xy_endval == zompy_settings['intStat']: # please test
                         numNeighbors += 1
 
             #breakpoint() # 
@@ -545,12 +544,13 @@ def conway(xmax, ymax):
             cell_age += 1
             if cell_val == zompy_settings['intStat']:
                 zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
+                countStatic += 1
             else:
                 if cell_age > zompy_settings['staticThreshold']:
                     zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
                     countStatic += 1
                 else:
-                    if cell_val > zompy_settings['intDead'] and numNeighbors >= 2: #(numNeighbors == 2 or numNeighbors == 3):
+                    if cell_val > zompy_settings['intDead'] and numNeighbors >= 2: #(numNeighbors == 2 or numNeighbors == 3): # TODO
                         zompy_map[x,y] = (zompy_settings['intLife'], cell_age)
                         countAlive += 1
                     elif cell_val == zompy_settings['intDead'] and (numNeighbors == 3):
