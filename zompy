@@ -283,7 +283,8 @@ def spawn_map(screen):
     # Fill in the blanks with "dead" cells (Conway)
     for x in range(xmax):
         for y in range(ymax):
-            map_lookup(x,y) # set category and age at once
+            map_null(x,y)
+#            map_lookup(x,y) # sets category and age at once
                 
 #            try:
 #                zompy_map[x,y]
@@ -343,13 +344,13 @@ def check_collision(input_snake):
     Changes input_snake.collision_detected to True if that is the case'''
     for block in range(input_snake.length()):
         obj_x, obj_y = input_snake.body[block]
-        coll_obj = map_lookup(obj_x,obj_y)[0]
+        coll_obj, coll_att = map_lookup(obj_x,obj_y)
 #        coll_obj = zompy_map[input_snake.body[block]][0] # what kind of item [0] exist at snake head?
         if coll_obj > zompy_settings['intDead']: # fast
             # TODO: check what type of item it is, we can perhaps eat some..?
             if coll_obj > zompy_settings['intStat']:
-                size_modifier = 1 # USE GROW INSTEAD OF DAMAGE TODO
-                input_snake.grow(1)
+                size_modifier = coll_att # USE GROW INSTEAD OF DAMAGE TODO
+                input_snake.grow(size_modifier)
                 input_snake.collision = False
                 
                 if zompy_settings['debug']: debug_message(msg='Growing by +N')
@@ -493,7 +494,7 @@ def update_map(input_snake_1, input_snake_2):
                                     break
     
     # Update stats string (if enabled)
-    if zompy_settings['stats']:zompy_settings['stats_str'] = f"gen:{zompy_settings['countGenerations']}  blocks:{coStat}  cell:{coAlive}  spawns:{coBirth}  stability:{zompy_settings['stabilityRecord']}  size:{input_snake_1.size}" # TODO
+    if zompy_settings['stats']: zompy_settings['stats_str'] = f"gen:{zompy_settings['countGenerations']}  blocks:{coStat}  cell:{coAlive}  spawns:{coBirth}  stability:{zompy_settings['stabilityRecord']}  size:{input_snake_1.size}" # TODO
     
     # debug 
     # output map to local file map.txt for debugging
@@ -805,6 +806,7 @@ def set_game_defaults():
     
     
     # Map area categories
+    zompy_settings['intEmpt'] = 0
     zompy_settings['intSnek'] = -1 # less than intDead to allow > 0 comparisons (faster).
     zompy_settings['intDead'] = 0
     zompy_settings['intLife'] = 1
@@ -830,7 +832,7 @@ def set_game_defaults():
     # 13. Bright Magenta
     # 14. Yellow
     # 15. Bright White 
-    zompy_settings['colorBack'] = 0
+    zompy_settings['colorBack'] = 0 # background
     zompy_settings['colorLife'] = 1
     zompy_settings['colorBorn'] = 3
     zompy_settings['colorSnek'] = 2
@@ -884,14 +886,16 @@ def set_game_defaults():
     
     
     # Setting fallback snek symbols (overridden by set_zompy_visuals)
+    # Note: if these are not set here, sanity check will fail.
     zompy_settings['chLife'] = None
     zompy_settings['chDead'] = None
     zompy_settings['chBorn'] = None
     zompy_settings['chSnek'] = None
     zompy_settings['chAppl'] = None
     zompy_settings['chStat'] = None
+    zompy_settings['chEmpt'] = None
 
-    # Remember to activate visual style (requires curses object)
+    # Activation of visual style requires curses object: run set_zompy_visuals()
 
 def set_zompy_visuals(style, color):
     '''Activates configured visual choices.
@@ -905,6 +909,7 @@ def set_zompy_visuals(style, color):
         zompy_settings['chSnek'] = ' ' # use green bkg as symbol
         zompy_settings['chStat'] = ' '
         zompy_settings['chAppl'] = ' '
+        zompy_settings['chEmpt'] = ' '
     elif style == 'blocks' and color == False: # i.e. unicode
         zompy_settings['color'] = True # use color where available
         zompy_settings['chLife'] = chr(9632)
@@ -913,6 +918,7 @@ def set_zompy_visuals(style, color):
         zompy_settings['chSnek'] = chr(9608)
         zompy_settings['chAppl'] = 'A'
         zompy_settings['chStat'] = 'X'
+        zompy_settings['chEmpt'] = ' '
     elif style == 'ascii':
         zompy_settings['chLife'] = 'o'
         zompy_settings['chDead'] = ' '
@@ -920,6 +926,7 @@ def set_zompy_visuals(style, color):
         zompy_settings['chSnek'] = '#'
         zompy_settings['chAppl'] = 'A'
         zompy_settings['chStat'] = 'S'
+        zompy_settings['chEmpt'] = ' '
     else:
         die(err_code=2)
 
