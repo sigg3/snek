@@ -191,7 +191,7 @@ def config_is_sane(zmpcfg):
     return True
 
 def get_terminal_size():
-    '''Returns terminal size using shutil'''
+    """Returns terminal size using shutil"""
     termCols,termRows = shutil.get_terminal_size(fallback=(zompy_settings['terminalMinWidth'],zompy_settings['terminalMinHeight']))
     if termCols < zompy_settings['terminalMinWidth'] and termRows < zompy_settings['terminalMinHeight']:
         print(f"Minimal terminal size supported is {zompy_settings['terminalMinWidth']} x {zompy_settings['terminalMinHeight']}")
@@ -199,7 +199,7 @@ def get_terminal_size():
     return termCols-1, termRows-1
 
 def set_terminal_size():
-    '''Stores width and height parameters fetched from get_terminal_size()'''
+    """Stores width and height parameters fetched from get_terminal_size()"""
     zompy_settings['width'], zompy_settings['height'] = get_terminal_size()
 
 def terminal_size_changed():
@@ -339,8 +339,8 @@ def draw_map(mapscreen):
                 mapscreen.addstr(y, x, draw_char)
 
 def check_collision(input_snake):
-    '''Checks whether any zombies have collided with input_snake.
-    Changes input_snake.collision_detected to True if that is the case'''
+    """Checks whether any zombies have collided with input_snake.
+    Changes input_snake.collision_detected to True if that is the case"""
     for block in range(input_snake.length()):
         obj_x, obj_y = input_snake.body[block]
         coll_obj, coll_att = map_lookup(obj_x,obj_y)
@@ -381,9 +381,9 @@ def check_collision(input_snake):
 
 
 def map_lookup(xpos,ypos):
-    '''Returns tuple of x,y key in zompy_map dict, and sets to default if empty.
+    """Returns tuple of x,y key in zompy_map dict, and sets to default if empty.
     To lookup only 1st in tuple, use map_lookup(xpos,ypos)[0].
-    Function works as a failsafe, in case zompy_map val has be unset elsewhere.'''
+    Function works as a failsafe, in case zompy_map val has be unset elsewhere."""
     #breakpoint()
 #    try:
 #       zompy_map[xpos,ypos]
@@ -394,8 +394,8 @@ def map_lookup(xpos,ypos):
     return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
 
 def map_null(xpos,ypos):
-    '''Overwrite map location val x,y to default (empty), age 0
-    Used e.g. if snake has eaten the item. Caught by update_map()'''
+    """Overwrite map location val x,y to default (empty), age 0
+    Used e.g. if snake has eaten the item. Caught by update_map()"""
     zompy_map[xpos,ypos] = (zompy_settings['intDead'],0)
 
 
@@ -404,7 +404,6 @@ def update_map(input_snake_1, input_snake_2):
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
     
-    breakpoint() # debug
     
     coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # lazy workaround
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
@@ -430,6 +429,8 @@ def update_map(input_snake_1, input_snake_2):
                         if map_lookup(xpos,ypos)[0] == zompy_settings['intDead']:
                             zompy_map[xpos,ypos] = (zompy_settings['intAppl'], 1) # put apple here, 1 is size-to-grow
                             break
+        
+        breakpoint() # debug
         
         
         # If we (zombies) are not attacking the snake, check stability
@@ -649,7 +650,7 @@ class snake:
             mapscreen.attroff(curses.color_pair(4))
     
     def erase(self):
-        '''Removes tail bit of self.body by 1 from zompy_map'''
+        """Removes tail bit of self.body by 1 from zompy_map"""
         tail_x, tail_y = self.body[self.size-1]
         if zompy_map[tail_x,tail_y][0] == ['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intDead'],0)
@@ -747,7 +748,7 @@ class snake:
     
     
     def length(self):
-        ''' returns size of snake in blocks (default: 4 or zompy_settings['blocks'])'''
+        """returns size of snake in blocks (default: 4 or zompy_settings['blocks'])"""
         return self.size
             
     def update_positions(self, direction):
@@ -767,10 +768,10 @@ class snake:
 
 
 def set_game_defaults():
-    '''Activates default config. Ran by default if __main__, and from settings menu (reset to defaults).
+    """Activates default config. Ran by default if __main__, and from settings menu (reset to defaults).
     It does not write to config file.
     In config_is_sane() defaults are used to initiate all values and check any config file inconsistency.
-    Since snek only has 1 global variable (zompy_settings) this function is central to the application.'''
+    Since snek only has 1 global variable (zompy_settings) this function is central to the application."""
     
     # set default config (does not write to file)
     # ALL ACCEPTED VALUES MUST BE SET, otherwise config sanity checks will fail
@@ -909,8 +910,10 @@ def set_game_defaults():
     # Activation of visual style requires curses object: run set_zompy_visuals()
 
 def set_zompy_visuals(style, color):
-    '''Activates configured visual choices.
-    All keys used here MUST be present in set_game_defaults(), else sanity check will fail.'''
+    """
+    Activates configured visual choices.
+    All keys used here MUST be present in set_game_defaults(), else sanity check will fail.
+    """
     # Ref unicode symbols: https://www.w3schools.com/charsets/ref_utf_block.asp
     # Roughly: If blocks is chosen, we just use background color
     if style == 'blocks' and color == True: # i.e. blocks
@@ -989,7 +992,7 @@ def set_zompy_visuals(style, color):
     # print_in(screen, attribute, xpos, ypos, string)
 
 def set_font(screen, attr, toggle_on):
-    '''Short hand markup language like toggle (for curses)'''
+    """Short hand markup language like toggle (for curses)"""
     if attr == 'b':
         screen.attron(curses.A_BOLD) if toggle_on else screen.attroff(curses.A_BOLD)
     elif attr == 'u':
@@ -1037,7 +1040,7 @@ def set_font(screen, attr, toggle_on):
 
 
 def screen_animation(screen, width, height):
-    '''Start-up "animation"'''
+    """Start-up animation"""
     if zompy_settings['color']:
         if zompy_settings['welcome']:
             sleepyt = 0.01
@@ -1078,7 +1081,7 @@ def screen_animation(screen, width, height):
 
 
 def screen_welcome(screen, width, height):
-    '''Draw a friendly welcome screen/home menu'''
+    """Draw a friendly welcome screen/home menu"""
     # Executed from within gameloop function (but outside the loop)
     
     # Draw header
@@ -1103,14 +1106,14 @@ def screen_welcome(screen, width, height):
 
 
 def return_opposite(bool_settings_val):
-    '''1/0 bool reversal for on/off toggle. Only works on ints 1 and 0.'''
+    """1/0 bool reversal for on/off toggle. Only works on ints 1 and 0."""
     if bool_settings_val == 0:
         return 1
     elif bool_settings_val == 1:
         return 0
 
 def toggle_debug(screen, width):
-    '''ON/OFF toggle debug (press p or P in menus)'''
+    """ON/OFF toggle debug (press p or P in menus)"""
     screen.addstr(2,width-10, 'DEBUG')
     if zompy_settings['debug']:
         zompy_settings['debug'] = False
@@ -1122,7 +1125,7 @@ def toggle_debug(screen, width):
     time.sleep(1)
 
 def debug_message(**kwargs):
-    '''Print a debug message and pause execution.'''
+    """Print a debug message and pause execution."""
     # Get args (debug msgs and screen)
     message_1 = kwargs.get('msg', ' ')
     message_2 = kwargs.get('msg2', ' ')
@@ -1135,10 +1138,12 @@ def debug_message(**kwargs):
     scr.getch()
 
 def screen_settings(screen):
-    '''Settings menu that allows user to customize her game experience somewhat.
+    """
+    Settings menu that allows user to customize her game experience somewhat.
     Choose setting with arrow keys and toggle with ENTER or input and ENTER.
     Can be reached from the main menu or from quick menu (resets current game).
-    Hidden function: hit p/P to toggle debug on/off.'''
+    Hidden function: hit p/P to toggle debug on/off.
+    """
 
     # fetch menu structure
     smenu = zompy_menu['settings']
@@ -1149,28 +1154,28 @@ def screen_settings(screen):
     third_column = width // 2
     
     
-    # Should lookl like this, more or less..
-    '''
-    Settings
-        Difficulty level           EASY / MEDIUM / HARD / CUSTOM
-        Speed (seconds)            0.4
-        Initial Snake Size         4
-        Zombies to add             10
+#    # Should lookl like this, more or less..
+#    
+#    Settings
+#        Difficulty level           EASY / MEDIUM / HARD / CUSTOM
+#        Speed (seconds)            0.4
+#        Initial Snake Size         4
+#        Zombies to add             10
+#    
+#    
+#    Gameplay
+#        Two-Player Mode              ON / OFF
+#        Start in motion              ON / OFF
+#        Reset on terminal resize     ON / OFF
+#    
+#    
+#    Visual
+#        Stats overlay                ON / OFF
+#        Style                        COLOR BLOCKS / UNICODE / ASCII
+#        
+#        
+#        [S]ave and continue / [C]ancel / [R]eset to defaults
     
-    
-    Gameplay
-        Two-Player Mode              ON / OFF
-        Start in motion              ON / OFF
-        Reset on terminal resize     ON / OFF
-    
-    
-    Visual
-        Stats overlay                ON / OFF
-        Style                        COLOR BLOCKS / UNICODE / ASCII
-        
-        
-        [S]ave and continue / [C]ancel / [R]eset to defaults
-    '''
     # inner drawing function
     def draw_smenu(selected_row):
         # Draws the menu with current selection and active settings
@@ -1658,10 +1663,12 @@ def screen_settings(screen):
 
 
 def get_wasd_input(key):
-    '''Determines output from curses input and returns that output.
+    """
+    Determines output from curses input and returns that output.
     Accepted outputs are 1-8 (arrow keys, wasd) and 0 (unknown/empty key).
     In 1 player mode, player can choose from arrow keys or wasd.
-    In 2 player mode, 1 player has wasd and 2nd player arrow keys.'''
+    In 2 player mode, 1 player has wasd and 2nd player arrow keys.
+    """
     # Takes curses input (key) and determine wasd output (or Unknown = 0)
     # If Two-Player mode, one has arrow keys and the other w,a,s,d
 
@@ -1684,7 +1691,7 @@ def get_wasd_input(key):
 
 
 def draw_popup(screen, from_y, from_x, to_y, to_x, refresh):
-    '''Draws a background of empty space using curses, then adds a unicode border frame.'''
+    """Draws a background of empty space using curses, then adds a unicode border frame."""
     # From_y = top < to_y, from_x < to_x
     # Draws a background of empty spaces with border frame
     # Allows us to put menu "in front of" existing stuff without interfering
@@ -1721,7 +1728,7 @@ def draw_popup(screen, from_y, from_x, to_y, to_x, refresh):
 
 
 def draw_quickmenu(screen, selected, width, height, canvas_y_beg, canvas_y_end, canvas_x_beg, canvas_x_end):
-    '''Draws the quickmenu using curses. Called by screen_quickmenu()'''
+    """Draws the quickmenu using curses. Called by screen_quickmenu()"""
     # First draw a background of empty spaces with +2 char padding
     # Instead of clearing the whole screen, fill canvas with spaces
     qmenu = zompy_menu['quick']
@@ -1755,7 +1762,7 @@ def game_over(screen,  width, height, snake_was_eaten): # TODO currently not in 
     
 
 def screen_quickmenu(screen, width, height):
-    '''Pauses the game clock and shows a quick menu.'''
+    """Pauses the game clock and shows a quick menu."""
     # local shorthand
     qmenu =  zompy_menu['quick']
         
@@ -2052,7 +2059,7 @@ def draw_menu(screen, current, width, height):
 
 
 def screen_menu(screen, width, height):
-    '''Game main menu constructor. Uses draw_menu() for curses output.'''
+    """Game main menu constructor. Uses draw_menu() for curses output."""
 
     # set shorthand
     mmenu = zompy_menu['main']
@@ -2145,7 +2152,7 @@ def screen_about(screen, width, height):
     
 
 def draw_stats(screen, width, height):
-    '''Optional and intrusive live stats overlay sourced by updated_map()'''
+    """Optional and intrusive live stats overlay sourced by updated_map()"""
     if zompy_settings['stats_str'] is not None:
         ypos = height - 2
         stats = zompy_settings['stats_str']
@@ -2159,7 +2166,7 @@ def draw_stats(screen, width, height):
 
 
 def press_any_key(screen, width, height):
-    '''Overwrites and prints "press any key" at height-1 and halts until user presses any key'''
+    """Overwrites and prints 'press any key' at height-1 and halts until user presses any key"""
     status_message(screen, width, height, 'Press any key to continue')
     
     # Draw on screen object
@@ -2181,9 +2188,11 @@ def status_message(screen, width, height, message):
 
 
 def screen_highscore(screen, score, rank, width, height):
-    '''Display highscore screen.
+    """
+    Display highscore screen.
     There are 2 points of entry: after game (show related message) or from main menu.
-    If called from outside of "game over" process, score and rank should be int 0.'''
+    If called from outside of "game over" process, score and rank should be int 0.
+    """
  
     # debug
     if zompy_settings['debug']: debug_message(scr=screen, msg=f'rank is {rank}')
