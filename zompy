@@ -30,6 +30,9 @@ from pathlib import Path
 # TODO edge bug
 # must fix wall-bug (-1 on traversing screen edges. ridiculous.)
 
+# TODO distribution bug
+# somehow, lifecycles have been reduced to naught. investigate.
+
 # TODO
 # ADD EDIBLE APPLE (SNAKE.GROW())   
 
@@ -171,6 +174,14 @@ def config_is_sane(zmpcfg):
         die(err_code=6)
     
     if len(configFile.items()) != len(zompy_settings):
+        len_file = len(configFile.items())
+        len_game = len(zompy_settings)
+        print(f'len file: {len_file}')
+        print(f'len game: {len_game}')
+        
+        print(zompy_settings.keys())
+        
+        
         configFile.close()
         die(err_code=5)
     for key in configFile.keys():
@@ -506,7 +517,10 @@ def conway(xmax, ymax):
 
             # set cell based on conway's rules
             cell_val, cell_age = map_lookup(x,y)
-            if cell_val != zompy_settings['intStat']:
+            if cell_val == zompy_settings['intStat']:
+                cell_age += 1
+                zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
+            else:
                 if cell_age > zompy_settings['staticThreshold']:
                     zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
                     countStatic += 1
@@ -770,12 +784,12 @@ def set_game_defaults():
     
     
     # Map area categories
+    zompy_settings['intSnek'] = -1 # less than intDead to allow > 0 comparisons (faster).
     zompy_settings['intDead'] = 0
     zompy_settings['intLife'] = 1
     zompy_settings['intBorn'] = 2
-    zompy_settings['intSnek'] = -1 # must be less than dead to allow >0 comparisons (faster).
     zompy_settings['intStat'] = 3 # static block
-    zompy_settings['intAppl'] = 4
+    zompy_settings['intAppl'] = 4 # edible type apple
     
 
     # set default colors and ASCII chars
@@ -853,6 +867,8 @@ def set_game_defaults():
     zompy_settings['chDead'] = None
     zompy_settings['chBorn'] = None
     zompy_settings['chSnek'] = None
+    zompy_settings['chAppl'] = None
+    zompy_settings['chStat'] = None
 
     # Remember to activate visual style (requires curses object)
 
