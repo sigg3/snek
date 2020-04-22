@@ -178,10 +178,6 @@ def config_is_sane(zmpcfg):
         len_game = len(zompy_settings)
         print(f'len file: {len_file}')
         print(f'len game: {len_game}')
-        
-        print(zompy_settings.keys())
-        
-        
         configFile.close()
         die(err_code=5)
     for key in configFile.keys():
