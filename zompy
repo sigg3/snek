@@ -198,8 +198,7 @@ def get_terminal_size():
     if termCols < 80 and termRows < 24:
         termCols = 80
         termRows = 24
-    return termCols, termRows
-#    return termCols-1, termRows-1
+    return termCols-1, termRows-1
 
 def set_terminal_size():
     zompy_settings['width'], zompy_settings['height'] = get_terminal_size()
