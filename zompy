@@ -403,6 +403,9 @@ def update_map(input_snake_1, input_snake_2):
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
     
+    # debugging
+    breakpoint()
+    
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
     
     # Check collision
