@@ -342,7 +342,9 @@ def check_collision(input_snake):
     '''Checks whether any zombies have collided with input_snake.
     Changes input_snake.collision_detected to True if that is the case'''
     for block in range(input_snake.length()):
-        coll_obj = zompy_map[input_snake.body[block]][0] # what kind of item [0] exist at snake head?
+        obj_x, obj_y = input_snake.body[block]
+        coll_obj = map_lookup(obj_x,obj_y)[0]
+#        coll_obj = zompy_map[input_snake.body[block]][0] # what kind of item [0] exist at snake head?
         if coll_obj > zompy_settings['intDead']: # fast
             # TODO: check what type of item it is, we can perhaps eat some..?
             if coll_obj > zompy_settings['intStat']:
@@ -350,21 +352,31 @@ def check_collision(input_snake):
                 input_snake.grow(1)
                 input_snake.collision = False
                 
+                if zompy_settings['debug']: debug_message(msg='Growing by +N')
                 # TODO remove obj from map
                 
             elif coll_obj == zompy_settings['intStat']:
                 if input_snake.damage(2) > 0:
-                    input_snake.collision = False
+                    input_snake.collision = False # returns current size after size modification
                 else:
                     input_snake.collision = True
-                # returns current size after size modification
+                
+                debug_message(msg='Hit by -2 damage') # REMOVE
+                
+                if zompy_settings['debug']: debug_message(msg='Hit by -2 damage')
             else:
                 if input_snake.damage(1) > 0:
                     input_snake.collision = False
                 else:
                     input_snake.collision = True
-                # returns current size after size modification
+
+                debug_message(msg='Hit by -1 damage') # REMOVE
+                
+                if zompy_settings['debug']: debug_message(msg='Hit by -1 damage')
+                
             break # No need to continue, true is true
+        elif coll_obj == zompy_settings['intSnek']:
+            pass # collision with self or other player, perhaps specify other player int as -2 # TODO
     return input_snake.collision
 
 
