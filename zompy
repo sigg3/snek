@@ -191,14 +191,15 @@ def config_is_sane(zmpcfg):
     return True
 
 def get_terminal_size():
-    # Returns curses friendly 79x23 for 80x24 term
-    termCols,termRows = shutil.get_terminal_size(fallback=(80,24))
-    if termCols < 80 and termRows < 24:
-        termCols = 80
-        termRows = 24
+    '''Returns terminal size using shutil'''
+    termCols,termRows = shutil.get_terminal_size(fallback=(zompy_settings['terminalMinWidth'],zompy_settings['terminalMinHeight']))
+    if termCols < zompy_settings['terminalMinWidth'] and termRows < zompy_settings['terminalMinHeight']:
+        print(f"Minimal terminal size supported is {zompy_settings['terminalMinWidth']} x {zompy_settings['terminalMinHeight']}")
+        die(0)
     return termCols-1, termRows-1
 
 def set_terminal_size():
+    '''Stores width and height parameters fetched from get_terminal_size()'''
     zompy_settings['width'], zompy_settings['height'] = get_terminal_size()
 
 def terminal_size_changed():
@@ -783,6 +784,11 @@ def set_game_defaults():
         zompy_settings['debug']
     except KeyError:
         zompy_settings['debug'] = False
+    
+    # Min terminal size
+    zompy_settings['terminalMinWidth'] = 80
+    zompy_settings['terminalMinHeight']= 24
+    
     
     # Score for highscore
     zompy_settings['score'] = 0
