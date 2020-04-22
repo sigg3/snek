@@ -284,7 +284,7 @@ def spawn_map(screen):
     for x in range(xmax+1):
         for y in range(ymax+1):
             map_lookup(x,y) # sets category and age at once
-                
+            
 #            try:
 #                zompy_map[x,y]
 #            except KeyError:
@@ -403,6 +403,8 @@ def update_map(input_snake_1, input_snake_2):
     # Updates existing map, raise alert if there's an attack (zombie eating snake)
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
+    
+    breakpoint() # debug
     
     coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # lazy workaround
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
