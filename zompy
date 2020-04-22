@@ -284,7 +284,7 @@ def spawn_map(screen):
     for x in range(xmax):
         for y in range(ymax):
             map_lookup(x,y) # set category and age at once
-            
+                
 #            try:
 #                zompy_map[x,y]
 #            except KeyError:
@@ -372,6 +372,11 @@ def map_lookup(xpos,ypos):
     '''Returns tuple of x,y key in zompy_map dict, and sets to default if empty.
     To lookup only 1st in tuple, use map_lookup(xpos,ypos)[0].
     Function works as a failsafe, in case zompy_map val has be unset elsewhere.'''
+    try:
+        zompy_map[xpos,ypos]
+    except KeyError:
+        debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
+    
     return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
     
 
@@ -511,17 +516,19 @@ def conway(xmax, ymax):
                     if xy_endval == zompy_settings['intLife'] or xy_endval == zompy_settings['intStat']:
                         numNeighbors += 1
 
+            #breakpoint() # 
+
             # set cell based on conway's rules
             cell_val, cell_age = map_lookup(x,y)
+            cell_age += 1
             if cell_val == zompy_settings['intStat']:
-                cell_age += 1
                 zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
             else:
                 if cell_age > zompy_settings['staticThreshold']:
                     zompy_map[x,y] = (zompy_settings['intStat'], cell_age)
                     countStatic += 1
                 else:
-                    if cell_val > zompy_settings['intDead'] and (numNeighbors == 2 or numNeighbors == 3):
+                    if cell_val > zompy_settings['intDead'] and numNeighbors >= 2: #(numNeighbors == 2 or numNeighbors == 3):
                         zompy_map[x,y] = (zompy_settings['intLife'], cell_age)
                         countAlive += 1
                     elif cell_val == zompy_settings['intDead'] and (numNeighbors == 3):
@@ -869,6 +876,8 @@ def set_game_defaults():
     # Remember to activate visual style (requires curses object)
 
 def set_zompy_visuals(style, color):
+    '''Activates configured visual choices.
+    All keys used here MUST be present in set_game_defaults(), else sanity check will fail.'''
     # Ref unicode symbols: https://www.w3schools.com/charsets/ref_utf_block.asp
     # Roughly: If blocks is chosen, we just use background color
     if style == 'blocks' and color == True: # i.e. blocks
@@ -2394,17 +2403,18 @@ def highscore(screen, width, height):
     # Append score + name + date to highscore
     zompy_settings['highscore'].append([zompy_settings['score'], player_name, play_date])
     zompy_settings['highscore'].sort(reverse=True)
-    hiscore_items = len(zompy_settings['highscore'])
     
-    if hiscore_items > 10:
-        zompy_settings['highscore'] = zompy_settings['highscore'][:10]
-        hiscore_items = 10
-
+    # We just want to keep track of 10
+    hiscore_items = 10
+    zompy_settings['highscore'] = zompy_settings['highscore'][:hiscore_items]
+    
     # Find current rank (laziest of evals)
+    # See if we're in top 10, if not we won't be shown :P
     rank = 100
-    for hiscore in range(0,hiscore_items):
-        if zompy_settings['highscore'][hiscore][1] == player_name and zompy_settings['highscore'][hiscore][0] == zompy_settings['score']:
+    for hiscore in range(hiscore_items):
+        if zompy_settings['highscore'][hiscore] == (zompy_settings['score'],player_name) : # check if score AND name are correct
             rank = hiscore
+            break
     rank +=1 # array start at 0
     
     # debug
@@ -2523,6 +2533,7 @@ def gameloop(screen):
             # Create snake object
             # Initiate snake "snek" with default size and movement settings, and give it a start location on map
             
+            status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Adding snake ..')
             snek = snake('snek', zompy_settings['blocks'], zompy_settings['movement'], zompy_settings['colorOne'])
             if zompy_settings['singleplayer']:
                 adder = None                
