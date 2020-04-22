@@ -273,7 +273,7 @@ def spawn_map(screen):
     zompy_map.clear()
     
     # Begin by adding zombies at N coordinates
-    # TODO change modifier to rely on screen dimensions ..
+    # TODO change modifier to rely on screen dimensions .. TODO TODO
     for limit in range(zompy_settings['zombiesToAdd']*10):
         x = random.randint(0,xmax)
         y = random.randint(0,ymax)
@@ -283,8 +283,7 @@ def spawn_map(screen):
     # Fill in the blanks with "dead" cells (Conway)
     for x in range(xmax):
         for y in range(ymax):
-            map_null(x,y)
-#            map_lookup(x,y) # sets category and age at once
+            map_lookup(x,y) # sets category and age at once
                 
 #            try:
 #                zompy_map[x,y]
@@ -405,7 +404,7 @@ def update_map(input_snake_1, input_snake_2):
     
     # debugging
     breakpoint()
-    
+    coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # 
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
     
     # Check collision
