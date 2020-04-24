@@ -14,12 +14,14 @@
 #
 # Submit issues and get updates at: <https://github.com/sigg3/snek>
 
+import logging
 import copy, shutil, shelve, curses, random, time
 from pathlib import Path
 
 # setup debug
 # toggle ON/OFF by hitting the letter P while in a menu
-import logging
+logging.disable(logging.CRITICAL)
+
 
 # MODULES AND USAGE
 # copy      deepcopying dead/alive grid/matrix # evaluate removal wrt. not being used
@@ -275,6 +277,12 @@ def spawn_map(screen):
     
     # clear any previous map (bugfix)
     zompy_map.clear()
+
+    # Fill in the blanks with "dead" cells (Conway)
+    # Added +1 because range excludes limit int
+    for x in range(xmax+1):
+        for y in range(ymax+1):
+            map_null(x,y)
     
     # Begin by adding zombies at N coordinates
     # TODO change modifier to rely on screen dimensions .. TODO TODO
@@ -284,11 +292,7 @@ def spawn_map(screen):
         zompy_map[x,y] = (zompy_settings['intLife'],0) # set both category and age at once
         zompy_settings['genesisAlive'] += 1 # count undead
     
-    # Fill in the blanks with "dead" cells (Conway)
-    # Added +1 because range excludes limit int
-    for x in range(xmax+1):
-        for y in range(ymax+1):
-            map_lookup(x,y) # sets category and age at once
+    
             
 #            try:
 #                zompy_map[x,y]
@@ -793,10 +797,7 @@ def set_game_defaults():
     # (Using try/except to avoid overwriting)
     try:
         zompy_settings['debug']
-        if zompy_settings['debug']:
-            turn_on_debug()
-        else:
-            logging.disable(logging.CRITICAL)
+        if zompy_settings['debug']: turn_on_debug()
     except KeyError:
         zompy_settings['debug'] = False
     
@@ -1125,7 +1126,7 @@ def return_opposite(bool_settings_val):
         return 0
 
 def turn_on_debug():
-    logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s) - %(message)s')
+    logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 def toggle_debug(screen, width):
     """ON/OFF toggle debug (press p or P in menus)"""
