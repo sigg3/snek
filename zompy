@@ -17,9 +17,9 @@
 import copy, shutil, shelve, curses, random, time
 from pathlib import Path
 
-# debug log
+# setup debug
+# toggle ON/OFF by hitting the letter P while in a menu
 import logging
-logging.disable(logging.CRITICAL)
 
 # MODULES AND USAGE
 # copy      deepcopying dead/alive grid/matrix # evaluate removal wrt. not being used
@@ -30,6 +30,7 @@ logging.disable(logging.CRITICAL)
 # random    some random ints
 # time      for game flow (otherwise everything happens too fast)
 # sys       for sys.exit() since Raise systemexit did not work :P
+# logging   used for debugging this thing
 
 # TODO edge bug
 # must fix wall-bug (-1 on traversing screen edges. ridiculous.)
@@ -199,7 +200,7 @@ def get_terminal_size():
     termCols,termRows = shutil.get_terminal_size(fallback=(zompy_settings['terminalMinWidth'],zompy_settings['terminalMinHeight']))
     if termCols < zompy_settings['terminalMinWidth'] and termRows < zompy_settings['terminalMinHeight']:
         print(f"Minimal terminal size supported is {zompy_settings['terminalMinWidth']} x {zompy_settings['terminalMinHeight']}")
-        die(0)
+        die()
     return termCols-1, termRows-1
 
 def set_terminal_size():
@@ -397,7 +398,7 @@ def map_lookup(xpos,ypos):
     logging.debug(f'Running map_lookup() with xpos={xpos} and ypos={ypos}')
     
     #return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
-    return zompy_map['xpos,ypos']
+    return zompy_map[xpos,ypos]
 
 def map_null(xpos,ypos):
     """Overwrite map location val x,y to default (empty), age 0
@@ -792,7 +793,10 @@ def set_game_defaults():
     # (Using try/except to avoid overwriting)
     try:
         zompy_settings['debug']
-        if zompy_settings['debug']: turn_on_debug()
+        if zompy_settings['debug']:
+            turn_on_debug()
+        else:
+            logging.disable(logging.CRITICAL)
     except KeyError:
         zompy_settings['debug'] = False
     
@@ -1121,7 +1125,6 @@ def return_opposite(bool_settings_val):
         return 0
 
 def turn_on_debug():
-    zompy_settings['debug'] = True
     logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s) - %(message)s')
 
 def toggle_debug(screen, width):
@@ -1129,10 +1132,13 @@ def toggle_debug(screen, width):
     screen.addstr(2,width-10, 'DEBUG')
     if zompy_settings['debug']:
         zompy_settings['debug'] = False
+        logging.debug('Disabling debug log')
         logging.disable(logging.CRITICAL)
         screen.addstr(3,width-15, 'debug disabled')
     else:
+        zompy_settings['debug'] = True
         turn_on_debug()
+        logging.debug('Ebabling debug log')
         screen.addstr(3,width-14, 'debug enabled')
     screen.refresh()
     time.sleep(1)
@@ -2770,7 +2776,7 @@ if __name__ == '__main__':
         zompy_config_file = Path.home()/Path('.config/zompy') # use XDG
     else:
         zompy_config_file = Path.home()/Path('.zompy') # use dumb
-
+    
     # Get configuration from file or use defaults
     # This enforces expected structure on input conf file too
     set_game_defaults()
