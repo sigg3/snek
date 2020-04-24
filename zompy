@@ -17,6 +17,10 @@
 import copy, shutil, shelve, curses, random, time
 from pathlib import Path
 
+# debug log
+import logging
+logging.disable(logging.CRITICAL)
+
 # MODULES AND USAGE
 # copy      deepcopying dead/alive grid/matrix # evaluate removal wrt. not being used
 # shutil    dynamic terminal size detection    # evaluate removal wrt. curses
@@ -141,11 +145,11 @@ def save_conf(zmpcfg):
     except:
         die(err_code=6)
     
-    if zompy_settings['debug']: print('Saving config to '+ str(zmpcfg))
+    logging.debug('Saving config to '+ str(zmpcfg))
     
     for key,value in zompy_settings.items():
         configFile[key] = value
-        if zompy_settings['debug']: print(f'{key} => {value}')
+        logging.debug(f'{key} => {value}')
     configFile.close()
 
 def read_conf(zmpcfg):
@@ -155,11 +159,11 @@ def read_conf(zmpcfg):
     except:
         die(err_code=6)
     
-    if zompy_settings['debug']: print('Loading config from '+ str(zmpcfg))
+    logging.debug('Loading config from '+ str(zmpcfg))
     
     for key,value in configFile.items():
         zompy_settings[key] = value
-        if zompy_settings['debug']: print(f'{key} <= {value}')
+        logging.debug(f'{key} <= {value}')
     configFile.close()
 
 def config_is_sane(zmpcfg):
@@ -352,7 +356,8 @@ def check_collision(input_snake):
                 input_snake.grow(size_modifier)
                 input_snake.collision = False
                 
-                if zompy_settings['debug']: debug_message(msg='Growing by +N')
+                logging.debug('Growing by +'+str(size_modifier))
+
                 # TODO remove obj from map
                 
             elif coll_obj == zompy_settings['intStat']:
@@ -361,18 +366,14 @@ def check_collision(input_snake):
                 else:
                     input_snake.collision = True
                 
-                debug_message(msg='Hit by -2 damage') # REMOVE
-                
-                if zompy_settings['debug']: debug_message(msg='Hit by -2 damage')
+                logging.debug('Hit by -2 damage')
             else:
                 if input_snake.damage(1) > 0:
                     input_snake.collision = False
                 else:
                     input_snake.collision = True
-
-                debug_message(msg='Hit by -1 damage') # REMOVE
                 
-                if zompy_settings['debug']: debug_message(msg='Hit by -1 damage')
+                logging.debug('Hit by -1 damage')
                 
             break # No need to continue, true is true
         elif coll_obj == zompy_settings['intSnek']:
@@ -426,7 +427,7 @@ def update_map(input_snake_1, input_snake_2):
                     while True:
                         ypos = random.randint(0,zompy_settings['height'])
                         xpos = random.randint(0,zompy_settings['width'])
-                        if map_lookup(xpos,ypos)[0] == zompy_settings['intDead']:
+                        if map_lookup(xpos,ypos)[0] == zompy_settings['intEmpt']:
                             zompy_map[xpos,ypos] = (zompy_settings['intAppl'], 1) # put apple here, 1 is size-to-grow
                             break
         
@@ -436,7 +437,7 @@ def update_map(input_snake_1, input_snake_2):
         # If we (zombies) are not attacking the snake, check stability
         # See if we've reached Conway's GOL Stability Plateau
 #        zompy_settings['stabilityIs'] = str(coAlive) + '-' + str(coBirth) + '-' + str(coDead)
-        zompy_settings['stabilityIs'] = f'{coAlive}-{coBirth}-{coDead}'
+        zompy_settings['stabilityIs'] = f"{coAlive}-{coBirth}-{coDead}"
         if zompy_settings['stabilityIs'] == zompy_settings['stabilityWas']:
             zompy_settings['stabilityRecord'] += 1
         elif zompy_settings['stabilityIs'] == zompy_settings['stabilityBefore']:
@@ -504,7 +505,8 @@ def update_map(input_snake_1, input_snake_2):
     
     # debug 
     # output map to local file map.txt for debugging
-    with open("debug_map.txt", "w") as LOW_COST_DEBUGGER: print(zompy_map, file=LOW_COST_DEBUGGER)
+    if zompy_settings['debug']:
+        with open("debug_map.txt", "w") as LOW_COST_DEBUGGER: print(zompy_map, file=LOW_COST_DEBUGGER)
 
 
 def conway(xmax, ymax):
@@ -677,7 +679,7 @@ class snake:
             if map_lookup(self.x,self.y)[0] > 0:
                 return True # TODO, we must distinguish between types of objects
         except KeyError:
-            debug_message(scr=screen, message=f'Got key error for self.head = \'{self.head}\'')
+            logging.debug(f'Got key error for self.head = \'{self.head}\'')
         return False
     
     def grow(self, many):
@@ -785,6 +787,7 @@ def set_game_defaults():
     # (Using try/except to avoid overwriting)
     try:
         zompy_settings['debug']
+        if zompy_settings['debug']: turn_on_debug()
     except KeyError:
         zompy_settings['debug'] = False
     
@@ -1112,30 +1115,35 @@ def return_opposite(bool_settings_val):
     elif bool_settings_val == 1:
         return 0
 
+def turn_on_debug():
+    zompy_settings['debug'] = True
+    logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s) - %(message)s')
+
 def toggle_debug(screen, width):
     """ON/OFF toggle debug (press p or P in menus)"""
     screen.addstr(2,width-10, 'DEBUG')
     if zompy_settings['debug']:
         zompy_settings['debug'] = False
+        logging.disable(logging.CRITICAL)
         screen.addstr(3,width-15, 'debug disabled')
     else:
-        zompy_settings['debug'] = True
+        turn_on_debug()
         screen.addstr(3,width-14, 'debug enabled')
     screen.refresh()
     time.sleep(1)
 
-def debug_message(**kwargs):
-    """Print a debug message and pause execution."""
-    # Get args (debug msgs and screen)
-    message_1 = kwargs.get('msg', ' ')
-    message_2 = kwargs.get('msg2', ' ')
-    scr = kwargs.get('scr', 0)
-    if scr is 0:
-        die(err_code=9)
-    scr.addstr(0,0,message_1)
-    scr.addstr(1,0,message_2)
-    scr.addstr(2,0,'PAUSED')
-    scr.getch()
+# def debug_message(**kwargs):
+    # """Print a debug message and pause execution."""
+    # # Get args (debug msgs and screen)
+    # message_1 = kwargs.get('msg', ' ')
+    # message_2 = kwargs.get('msg2', ' ')
+    # scr = kwargs.get('scr', 0)
+    # if scr is 0:
+        # die(err_code=9)
+    # scr.addstr(0,0,message_1)
+    # scr.addstr(1,0,message_2)
+    # scr.addstr(2,0,'PAUSED')
+    # scr.getch()
 
 def screen_settings(screen):
     """
@@ -2193,9 +2201,9 @@ def screen_highscore(screen, score, rank, width, height):
     There are 2 points of entry: after game (show related message) or from main menu.
     If called from outside of "game over" process, score and rank should be int 0.
     """
- 
+    
     # debug
-    if zompy_settings['debug']: debug_message(scr=screen, msg=f'rank is {rank}')
+    logging.debug(f'rank is {rank}')
     
     # Choose a title
     if rank == 1:
@@ -2462,14 +2470,12 @@ def highscore(screen, width, height):
             break
     rank +=1 # array start at 0
     
-    # debug
-    if zompy_settings['debug']: debug_message(scr=screen, msg=f'rank is {rank}')
+    logging.debug(f'rank is {rank}')
     
     # If rank too low, demote to insignificance
     if rank > 10: rank = 0
     
-    # debug
-    if zompy_settings['debug']: debug_message(scr=screen, msg=f'rank adjusted to {rank}')
+    logging.debug(f'rank adjusted to {rank}')
     
     # Save highscores to file
     save_conf(zompy_config_file)
@@ -2568,8 +2574,7 @@ def gameloop(screen):
         # Reset settings or continue with existing
         if zompy_settings['reset']:
             
-            # debug
-            if zompy_settings['debug']: debug_message(scr=screen, msg='Running spawn_map()') # debug
+            logging.debug(f'Running spawn_map()')
             
             # Populate map with zombies
             status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Populating map ..')
@@ -2601,12 +2606,13 @@ def gameloop(screen):
  #           debug_char = screen.getch() # debug
             
             if zompy_settings['singleplayer']:
-                if zompy_settings['debug']: debug_message(scr=screen, msg=str(snek)) # debug
+                logging.debug(str(snek))
                 
                 update_map(snek, None)
 #                update_map(snek) # moves zombies and checks for collisions (if so snek.collision = True)
             else:
-                if zompy_settings['debug']: debug_message(scr=screen, msg=str(snek), msg2=str(adder))
+                logging.debug(snek)
+                logging.debug(adder)
                 
                 # TODO
                 update_map(snek, adder)
@@ -2630,20 +2636,19 @@ def gameloop(screen):
 #        screen.clear()
         
         # debug
-        if zompy_settings['debug']: debug_message(scr=screen, msg='Running draw_map(screen)') # debug
+        logging.debug('Running draw_map(screen)')
         
         # Draw map on screen
         draw_map(screen)
         
         # debug
-        if zompy_settings['debug']: debug_message(scr=screen, msg='Running snek.draw(screen)') # debug
+        logging.debug('Running snek.draw(screen)')
         
         # Draw snake on map
         snek.draw(screen)
         
         # Draw stats (if any)
-        if zompy_settings['stats']:
-            draw_stats(screen, zompy_settings['width'], zompy_settings['height'])
+        if zompy_settings['stats']: draw_stats(screen, zompy_settings['width'], zompy_settings['height'])
         
         # debug
 #        screen.addstr(0,0, 'Running screen.refresh()') # debug
@@ -2659,8 +2664,8 @@ def gameloop(screen):
         # TODO
         # Hot seat multiplayer
         # Some re-write to do here
-        if zompy_settings['debug']: debug_message(scr=screen, msg='check_collision(snek)', msg2=str(check_collision(snek)))
-        
+        logging.debug('check_collision(snek)')
+#        logging.debug(str(snek.collision)) # TODO
         
         if check_collision(snek):
             # only true iff snake is dead, otherwise diminish and continue
@@ -2768,11 +2773,13 @@ if __name__ == '__main__':
     # Get configuration from file or save new conf to file
     if zompy_config_file.is_file():
         print(f'Reading config from {zompy_config_file}')
+        logging.debug(f'Reading config from {zompy_config_file}')
         if config_is_sane(zompy_config_file):
             print('Config check OK, loading ..')
             read_conf(zompy_config_file)
     else:
         print(f'Creating config in {zompy_config_file}')
+        logging.debug(f'Creating config in {zompy_config_file}')
         save_conf(zompy_config_file) # creates new file
 
     # Show welcome screen (override)
