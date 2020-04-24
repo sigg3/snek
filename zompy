@@ -392,6 +392,10 @@ def map_lookup(xpos,ypos):
 #       print('hit a snag')
 #       debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
     
+    assert isinstance(xpos, int), f"xpos '{xpos}' not set or not an integer"
+    assert isinstance(ypos, int), f"ypos '{ypos}' not set or not an integer"
+    logging.debug(f'Running map_lookup() with xpos={xpos} and ypos={ypos}')
+    
     return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
 
 def map_null(xpos,ypos):
