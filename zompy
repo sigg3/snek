@@ -396,7 +396,8 @@ def map_lookup(xpos,ypos):
     assert isinstance(ypos, int), f"ypos '{ypos}' not set or not an integer"
     logging.debug(f'Running map_lookup() with xpos={xpos} and ypos={ypos}')
     
-    return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
+    #return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
+    return zompy_map['xpos,ypos']
 
 def map_null(xpos,ypos):
     """Overwrite map location val x,y to default (empty), age 0
