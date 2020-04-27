@@ -33,6 +33,27 @@ logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(a
 # sys       for sys.exit() since Raise systemexit did not work :P
 # logging   used for debugging this thing
 
+# TODO damage bug: hit twice, sort it out
+# from debug log:
+ # 2020-04-27 11:58:37,260 - DEBUG - Hello! I am a snake named snek, 6 blocks long, and collision is False
+ # 2020-04-27 11:58:37,260 - DEBUG - update_map() exec conway using width:79 and height:23
+ # 2020-04-27 11:58:37,706 - DEBUG - Hit by -1 damage
+ # 2020-04-27 11:58:37,707 - DEBUG - draw_map() with width:79 and height:23
+ # 2020-04-27 11:58:37,809 - DEBUG - check_collision(snek)
+ # 2020-04-27 11:58:37,809 - DEBUG - Hit by -1 damage
+ # 2020-04-27 11:58:38,810 - DEBUG - Hello! I am a snake named snek, 4 blocks long, and collision is True
+
+
+# TODO
+# Change from dictionary lookups to true OOP
+# class cell()
+# self.x, self.y, self.contents, 
+#
+# class molecule() # composed of several cells
+# 
+# class snake is a cell structure (molecule)
+# 
+
 # TODO edge bug
 # must fix wall-bug (-1 on traversing screen edges. ridiculous.)
 
