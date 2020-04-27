@@ -316,8 +316,8 @@ def draw_map(mapscreen):
     # zompy_settings['colorAppl'] = 2 # use green to begin with
 
     # debug
-#    mapscreen.addstr(0,0, 'function draw_map(mapscreen) executed') # debug
-#    debug_char = mapscreen.getch() # debug
+    logging.debug(f"draw_map() with width:{zompy_settings['width']} and height:{zompy_settings['height']}")
+
     
     for y in range(zompy_settings['height']):
         for x in range(zompy_settings['width']):
@@ -334,10 +334,13 @@ def draw_map(mapscreen):
             elif occupied_by == zompy_settings['intAppl']:
                 draw_char = zompy_settings['chAppl']
                 draw_color = zompy_settings['colorAppl']
-            else:
+            elif occupied_by == zompy_settings['intEmpt']:
                 draw_char = zompy_settings['chDead'] # Draw dead in else statement to over-write "ghosts"
                 draw_color = zompy_settings['colorDead']
-                
+            else:
+                print('update_map() returns non-recognized val for map obj int.. ;(')
+                raise ValueError
+            
             # execute addstr
             if zompy_settings['color']:
                 mapscreen.attron(curses.color_pair(draw_color))
