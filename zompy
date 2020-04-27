@@ -2693,24 +2693,30 @@ def gameloop(screen):
             # only true iff snake is dead, otherwise diminish and continue
             # snake is dead (size less than 0 blocks)
             
+            logging.debug('collision with snek true')
+            
             if zompy_settings['singleplayer']:
             
                 # Provide game over message
+                logging.debug(f'snek size {snek.size} before')
                 if snek.size <= 0:
                     game_over(screen, zompy_settings['width'], zompy_settings['height'], True)
+                    
+                    # enable blocking
+                    screen.timeout(-1)
+                    
+                    # Run highscore
+                    highscore(screen, zompy_settings['width'], zompy_settings['height'])
+                    
+                    # kill game
+                    break
+                    
                 else:
-                    game_over(screen, zompy_settings['width'], zompy_settings['height'], True)
+                    curses.flash()
                 
-                # enable blocking
-                screen.timeout(-1)
+                logging.debug(f'snek size {snek.size} after')
                 
-                # Run highscore
-                highscore(screen, zompy_settings['width'], zompy_settings['height'])
-                
-                # kill game
-                break
-                
-        else:               
+        else:
             # Get key stroke or keep moving
             try:
                 #screen.timeout(int(zompy_settings['speed'] * 1000))
