@@ -319,7 +319,7 @@ def draw_map(mapscreen):
     logging.debug(f"draw_map() with width:{zompy_settings['width']} and height:{zompy_settings['height']}")
 
     
-    for y in range(zompy_settings['height']):
+    for y in range(zompy_settings['height']+1):
         for x in range(zompy_settings['width']):
             occupied_by = map_lookup(x,y)[0]
             if occupied_by == zompy_settings['intBorn']:
@@ -342,6 +342,7 @@ def draw_map(mapscreen):
                 raise ValueError
             
             # execute addstr
+            logging.debug(f"drawing on char '{draw_char}' at y={y} and x={x}")
             if zompy_settings['color']:
                 mapscreen.attron(curses.color_pair(draw_color))
                 mapscreen.addstr(y, x, draw_char)
@@ -2483,14 +2484,10 @@ def highscore(screen, width, height):
     # Find current rank (laziest of evals)
     # See if we're in top 10, if not we won't be shown :P
     rank = 100
-    for hiscore in range(hiscore_items):
-        try:
-            if zompy_settings['highscore'][hiscore] == (zompy_settings['score'],player_name) : # check if score AND name are correct
-                rank = hiscore
-                break
-        except IndexError:
+    for idx, hisco in enumerate(zompy_settings['highscore']):
+        if hisco[0] == zompy_settings['score'] and hisco[1] == player_name:
+            rank = idx + 1
             break
-    rank +=1 # array start at 0
     
     logging.debug(f'rank is {rank}')
     
