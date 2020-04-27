@@ -386,15 +386,10 @@ def check_collision(input_snake):
 
 
 def map_lookup(xpos,ypos):
-    """Returns tuple of x,y key in zompy_map dict, and sets to default if empty.
+    """Returns tuple of x,y key in zompy_map dict, and sets to default if empty. (TODO)
     To lookup only 1st in tuple, use map_lookup(xpos,ypos)[0].
     Function works as a failsafe, in case zompy_map val has be unset elsewhere."""
-    #breakpoint()
-#    try:
-#       zompy_map[xpos,ypos]
-#   except KeyError:
-#       print('hit a snag')
-#       debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
+    
     
     assert type(xpos) == int, f"xpos '{xpos}' not an integer"
     assert type(ypos) == int, f"ypos '{ypos}' not an integer"
@@ -419,6 +414,8 @@ def update_map(input_snake_1, input_snake_2):
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
     
+    
+    logging.debug(f"update_map() exec conway using width:{zompy_settings['width']} and height:{zompy_settings['height']}")
     
     coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # lazy workaround
     coAlive, coBirth, coDead, coStat, coControl = conway(zompy_settings['width'],zompy_settings['height'])
