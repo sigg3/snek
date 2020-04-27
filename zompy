@@ -20,8 +20,7 @@ from pathlib import Path
 
 # setup debug
 # toggle ON/OFF by hitting the letter P while in a menu
-logging.disable(logging.CRITICAL)
-
+logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # MODULES AND USAGE
 # copy      deepcopying dead/alive grid/matrix # evaluate removal wrt. not being used
@@ -397,8 +396,11 @@ def map_lookup(xpos,ypos):
 #       print('hit a snag')
 #       debug_message(msg='KeyError in xpos,ypos', msg2='Confer with debug_map.txt now.')
     
+    assert type(xpos) == int, f"xpos '{xpos}' not an integer"
+    assert type(ypos) == int, f"ypos '{ypos}' not an integer"
     assert isinstance(xpos, int), f"xpos '{xpos}' not set or not an integer"
     assert isinstance(ypos, int), f"ypos '{ypos}' not set or not an integer"
+    assert isinstance(zompy_map[xpos,ypos], tuple), f"zompy_map[{xpos},{ypos}] not tuple but '{zompy_map[xpos,ypos]}'"
     logging.debug(f'Running map_lookup() with xpos={xpos} and ypos={ypos}')
     
     #return zompy_map.setdefault((xpos,ypos), (zompy_settings['intDead'],0))
@@ -407,6 +409,8 @@ def map_lookup(xpos,ypos):
 def map_null(xpos,ypos):
     """Overwrite map location val x,y to default (empty), age 0
     Used e.g. if snake has eaten the item. Caught by update_map()"""
+    assert xpos <= zompy_settings['width'], f"xpos {xpos} out of bounds (w:{zompy_settings['width']})"
+    assert ypos <= zompy_settings['height'], f"xpos {ypos} out of bounds (h:{zompy_settings['height']})"
     zompy_map[xpos,ypos] = (zompy_settings['intDead'],0)
 
 
@@ -441,7 +445,7 @@ def update_map(input_snake_1, input_snake_2):
                             zompy_map[xpos,ypos] = (zompy_settings['intAppl'], 1) # put apple here, 1 is size-to-grow
                             break
         
-        breakpoint() # debug
+#        breakpoint() # debug
         
         
         # If we (zombies) are not attacking the snake, check stability
@@ -797,7 +801,10 @@ def set_game_defaults():
     # (Using try/except to avoid overwriting)
     try:
         zompy_settings['debug']
-        if zompy_settings['debug']: turn_on_debug()
+        if zompy_settings['debug']:
+            turn_on_debug()
+        else:
+            logging.disable(logging.CRITICAL)
     except KeyError:
         zompy_settings['debug'] = False
     
@@ -1126,7 +1133,7 @@ def return_opposite(bool_settings_val):
         return 0
 
 def turn_on_debug():
-    logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.disable(logging.DEBUG)
 
 def toggle_debug(screen, width):
     """ON/OFF toggle debug (press p or P in menus)"""
@@ -2477,8 +2484,11 @@ def highscore(screen, width, height):
     # See if we're in top 10, if not we won't be shown :P
     rank = 100
     for hiscore in range(hiscore_items):
-        if zompy_settings['highscore'][hiscore] == (zompy_settings['score'],player_name) : # check if score AND name are correct
-            rank = hiscore
+        try:
+            if zompy_settings['highscore'][hiscore] == (zompy_settings['score'],player_name) : # check if score AND name are correct
+                rank = hiscore
+                break
+        except IndexError:
             break
     rank +=1 # array start at 0
     
