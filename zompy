@@ -342,7 +342,7 @@ def draw_map(mapscreen):
                 raise ValueError
             
             # execute addstr
-            logging.debug(f"drawing on char '{draw_char}' at y={y} and x={x}")
+            logging.debug(f"drawing '{draw_char}' for val '{occupied_by}' on y={y} and x={x}")
             if zompy_settings['color']:
                 mapscreen.attron(curses.color_pair(draw_color))
                 mapscreen.addstr(y, x, draw_char)
