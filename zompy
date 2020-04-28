@@ -769,7 +769,7 @@ class snake:
         return self.size
     
     def damage(self, many):
-        """called by TODO
+        """called by TODO == YTBD
         first, set tail to 0 on map (erase)
         then, decrease by <remover> number of blocks
         return current size
