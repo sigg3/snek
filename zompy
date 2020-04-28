@@ -410,24 +410,26 @@ def check_collision(input_snake):
                 input_snake.grow(size_modifier)
                 input_snake.collision = False
                 
-                logging.debug('Growing by +'+str(size_modifier))
+                logging.debug('check_collision() Growing by +'+str(size_modifier))
 
                 # TODO remove obj from map
                 
             elif coll_obj == zompy_settings['intStat']:
+                logging.debug('check_collision() running if input_snake.damage(2) > 0')
                 if input_snake.damage(2) > 0:
                     input_snake.collision = False # returns current size after size modification
                 else:
                     input_snake.collision = True
                 
-                logging.debug('Hit by -2 damage')
+                logging.debug('check_collision() Hit by -2 damage')
             else:
+                logging.debug('check_collision() running if input_snake.damage(1) > 0')
                 if input_snake.damage(1) > 0:
                     input_snake.collision = False
                 else:
                     input_snake.collision = True
                 
-                logging.debug('Hit by -1 damage')
+                logging.debug('check_collision() Hit by -1 damage')
                 
             break # No need to continue, true is true
         elif coll_obj == zompy_settings['intSnek']:
@@ -474,6 +476,7 @@ def update_map(input_snake_1, input_snake_2):
     # Allows us to do this for >1 snake later on
     # TODO allow for check of input_nake_2
     
+    logging.debug('update_map() running if not check_collision(input_snake_1)')
     if not check_collision(input_snake_1):
         if zompy_settings['applesEnabled']:
             # Check if there are apples
@@ -711,14 +714,14 @@ class snake:
             mapscreen.attroff(curses.color_pair(4))
     
     def erase(self):
-        """Removes tail bit of self.body by 1 from zompy_map"""
+        """Ovewrwrites tail bit of self.body by 1 from zompy_map with intEmpt"""
         tail_x, tail_y = self.body[self.size-1]
         logging.debug(f"snek.erase(), snake is x={self.x}, y={self.y}, dir={self.dir}")
         logging.debug(f"snek.erase(), establish tail using self.body[{self.size}-1]")
         logging.debug(f"snek.erase() tail_x={tail_x}, tail_y={tail_y}")
         logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}'")
         if zompy_map[tail_x,tail_y][0] == ['intSnek']:
-            zompy_map[tail_x,tail_y] = (zompy_settings['intDead'],0)
+            zompy_map[tail_x,tail_y] = (zompy_settings['intEmpt'],0)
     
     def evaluate_direction(self, direction):
         # Evaluates key press to change is_moving to False if direction is opposite of self.dir
@@ -2732,7 +2735,7 @@ def gameloop(screen):
         # TODO
         # Hot seat multiplayer
         # Some re-write to do here
-        logging.debug('check_collision(snek)')
+        logging.debug('game_loop() if check_collision(snek)')
 #        logging.debug(str(snek.collision)) # TODO
         
         if check_collision(snek):
