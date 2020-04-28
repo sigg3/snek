@@ -43,6 +43,29 @@ logging.basicConfig(filename='snek_debug.log', level=logging.DEBUG, format=' %(a
  # 2020-04-27 11:58:37,809 - DEBUG - Hit by -1 damage
  # 2020-04-27 11:58:38,810 - DEBUG - Hello! I am a snake named snek, 4 blocks long, and collision is True
 
+# More debug log:
+ # 2020-04-28 11:42:39,087 - DEBUG - Hit by -1 damage
+ # 2020-04-28 11:42:39,886 - DEBUG - Hello! I am a snake named snek, 4 blocks long, and collision is True
+ # 2020-04-28 11:42:39,886 - DEBUG - update_map() exec conway using width:79 and height:23
+ # 2020-04-28 11:42:40,248 - DEBUG - snek.damage() with many = 1
+ # 2020-04-28 11:42:40,248 - DEBUG - snek.erase(), snake is x=37, y=13, dir=1
+ # 2020-04-28 11:42:40,248 - DEBUG - snek.erase(), establish tail using self.body[4-1]
+ # 2020-04-28 11:42:40,248 - DEBUG - snek.erase() tail_x=38, tail_y=15
+ # 2020-04-28 11:42:40,248 - DEBUG - snek.erase() map value at ^ x,y == '(0, 0)'
+ # 2020-04-28 11:42:40,248 - DEBUG - Hit by -1 damage
+ # 2020-04-28 11:42:40,249 - DEBUG - Running draw_map(screen)
+ # 2020-04-28 11:42:40,249 - DEBUG - draw_map() with width:79 and height:23
+ # 2020-04-28 11:42:40,332 - DEBUG - Running snek.draw(screen)
+ # 2020-04-28 11:42:40,332 - DEBUG - check_collision(snek)
+ # 2020-04-28 11:42:40,332 - DEBUG - snek.damage() with many = 1
+ # 2020-04-28 11:42:40,332 - DEBUG - snek.erase(), snake is x=37, y=13, dir=1
+ # 2020-04-28 11:42:40,332 - DEBUG - snek.erase(), establish tail using self.body[3-1]
+ # 2020-04-28 11:42:40,332 - DEBUG - snek.erase() tail_x=38, tail_y=14
+ # 2020-04-28 11:42:40,332 - DEBUG - snek.erase() map value at ^ x,y == '(2, 1)'
+ # 2020-04-28 11:42:40,332 - DEBUG - Hit by -1 damage
+
+
+
 
 # TODO
 # Change from dictionary lookups to true OOP
@@ -690,9 +713,10 @@ class snake:
     def erase(self):
         """Removes tail bit of self.body by 1 from zompy_map"""
         tail_x, tail_y = self.body[self.size-1]
+        logging.debug(f"snek.erase(), snake is x={self.x}, y={self.y}, dir={self.dir}")
         logging.debug(f"snek.erase(), establish tail using self.body[{self.size}-1]")
         logging.debug(f"snek.erase() tail_x={tail_x}, tail_y={tail_y}")
-        logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}')
+        logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}'")
         if zompy_map[tail_x,tail_y][0] == ['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intDead'],0)
     
