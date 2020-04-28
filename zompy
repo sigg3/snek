@@ -692,6 +692,7 @@ class snake:
         tail_x, tail_y = self.body[self.size-1]
         logging.debug(f"snek.erase(), establish tail using self.body[{self.size}-1]")
         logging.debug(f"snek.erase() tail_x={tail_x}, tail_y={tail_y}")
+        logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}')
         if zompy_map[tail_x,tail_y][0] == ['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intDead'],0)
     
