@@ -384,7 +384,8 @@ def draw_map(mapscreen):
                 draw_char = zompy_settings['chDead'] # Draw dead in else statement to over-write "ghosts"
                 draw_color = zompy_settings['colorDead']
             else:
-                print('update_map() returns non-recognized val for map obj int.. ;(')
+                cell_content = map_lookup(x,y)
+                logging.debug(f"update_map() returns non-recognized val '{occupied_by}' for map obj at {x},{y} = {cell_content}")
                 raise ValueError
             
             # execute addstr
@@ -720,6 +721,11 @@ class snake:
         logging.debug(f"snek.erase(), establish tail using self.body[{self.size}-1]")
         logging.debug(f"snek.erase() tail_x={tail_x}, tail_y={tail_y}")
         logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}'")
+        
+        
+        cell_content = map_lookup(tail_x, tail_y)
+        assert cell_content[0] == ['intSnek'], f'The snake tail bit to erase() is not a snake cell but {cell_content}.'
+        
         if zompy_map[tail_x,tail_y][0] == ['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intEmpt'],0)
     
