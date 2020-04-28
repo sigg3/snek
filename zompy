@@ -446,6 +446,7 @@ def map_lookup(xpos,ypos):
     
     assert type(xpos) == int, f"xpos '{xpos}' not an integer"
     assert type(ypos) == int, f"ypos '{ypos}' not an integer"
+    assert type(zompy_map[xpos,ypos]) == tuple, f" zompy_map[{xpos},{ypos}] not a tuple"
     assert isinstance(xpos, int), f"xpos '{xpos}' not set or not an integer"
     assert isinstance(ypos, int), f"ypos '{ypos}' not set or not an integer"
     assert isinstance(zompy_map[xpos,ypos], tuple), f"zompy_map[{xpos},{ypos}] not tuple but '{zompy_map[xpos,ypos]}'"
@@ -478,8 +479,12 @@ def update_map(input_snake_1, input_snake_2):
     # TODO allow for check of input_nake_2
     
     logging.debug('update_map() running if not check_collision(input_snake_1)')
+    
+    # TODO probably look for input_snake.collision or something instead BUGFIX! TODO
+    
     if not check_collision(input_snake_1):
         if zompy_settings['applesEnabled']:
+            logging.debug('update_map() no collision, adding apples')
             # Check if there are apples
             apples = 0
             for cell in zompy_map.values(): 
@@ -488,10 +493,13 @@ def update_map(input_snake_1, input_snake_2):
             # If not, add 1 or 2
             if not apples:
                 apple_count = 1 + pseudorand() # 1 or 2
-                for just_another_apple_themed_variable_name in range(apple_count):
-                    while True:
+                for _ in range(apple_count):
+                    apple_ticker = 0
+                    while apple_ticker < 100: # set a decent ceiling
+                        apple_ticker += 1
                         ypos = random.randint(0,zompy_settings['height'])
                         xpos = random.randint(0,zompy_settings['width'])
+                        apple_ticker +=1
                         if map_lookup(xpos,ypos)[0] == zompy_settings['intEmpt']:
                             zompy_map[xpos,ypos] = (zompy_settings['intAppl'], 1) # put apple here, 1 is size-to-grow
                             break
@@ -568,8 +576,8 @@ def update_map(input_snake_1, input_snake_2):
     
     # debug 
     # output map to local file map.txt for debugging
-    #if zompy_settings['debug']:
-    #    with open("debug_map.txt", "w") as LOW_COST_DEBUGGER: print(zompy_map, file=LOW_COST_DEBUGGER)
+    if zompy_settings['debug']:
+        with open("debug_map.txt", "w") as LOW_COST_DEBUGGER: print(zompy_map, file=LOW_COST_DEBUGGER)
 
 
 def conway(xmax, ymax):
@@ -724,9 +732,10 @@ class snake:
         
         
         cell_content = map_lookup(tail_x, tail_y)
-        assert cell_content[0] == ['intSnek'], f'The snake tail bit to erase() is not a snake cell but {cell_content}.'
+        assert type(cell_content) == tuple, f"snek.erase() Cell content at {tail_x}, {tail_y} not tuple but '{cell_content}'"
+        assert cell_content[0] == zompy_settings['intSnek'], f'snek.erase() The snake tail bit to erase() is not snake but {cell_content}.'
         
-        if zompy_map[tail_x,tail_y][0] == ['intSnek']:
+        if cell_content[0] == zompy_settings['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intEmpt'],0)
     
     def evaluate_direction(self, direction):
