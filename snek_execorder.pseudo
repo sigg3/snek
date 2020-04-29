@@ -1,0 +1,22 @@
+while True:
+
+reset_on_termchange
+
+if reset:
+  spawn_map(screen)
+  snek = snake ....
+  zompy_settings['countGenerations'] = 0
+  zompy_settings['score'] = epoch
+  time_to_move = zompy_settings['score']
+  reset false
+else:
+  update_map(snek, None) # substantial change
+
+
+zompy_settings['countGenerations'] += 1
+
+# curses action
+draw_map(screen)
+
+# curses action
+snek.draw(screen)

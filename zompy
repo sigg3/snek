@@ -2642,7 +2642,7 @@ def gameloop(screen):
     set_terminal_size()
     
     # Make sure we initate correctly
-    zompy_settings['reset'] = True
+    zompy_settings['reset'] = True 
     
     # Activate visual style
     set_zompy_visuals(zompy_settings['style'], zompy_settings['color'])
@@ -2668,22 +2668,23 @@ def gameloop(screen):
             logging.debug(f'Running spawn_map()')
             
             # Populate map with zombies
-            status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Populating map ..')
+            status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Populating map ..') # TODO remove: only necessary if stuck in forever-loop
             spawn_map(screen)
             
             # Create snake object
             # Initiate snake "snek" with default size and movement settings, and give it a start location on map
             
-            status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Adding snake ..')
+            status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Adding snake ..') # TODO remove: only necessary if stuck in forever-loop
             snek = snake('snek', zompy_settings['blocks'], zompy_settings['movement'], zompy_settings['colorOne'])
             if zompy_settings['singleplayer']:
                 adder = None                
             else:
-                status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Adding 2nd snake ..')
+                status_message(screen, zompy_settings['width'], zompy_settings['height'], 'Adding 2nd snake ..') # TODO remove: only necessary if stuck in forever-loop
                 adder = snake('adder', zompy_settings['blocks'], zompy_settings['movement'], zompy_settings['colorTwo']) # player 2
             
             
             # Start SCORE calculation (play time component)
+            zompy_settings['countGenerations'] = 0
             zompy_settings['score'] = epoch_as_sec() # reset score
             time_to_move = zompy_settings['score']
             
