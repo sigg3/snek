@@ -468,7 +468,6 @@ def update_map(input_snake_1, input_snake_2):
     # So really, it's more like "opponent's move", rather than map update
     # Legend: anything greater than 0 is occupied space
     
-    
     logging.debug(f"update_map() exec conway using width:{zompy_settings['width']} and height:{zompy_settings['height']}")
     
     coAlive, coBirth, coDead, coStat, coControl = 0, 0, 0, 0, 0 # lazy workaround
@@ -657,9 +656,8 @@ class snake:
     def __str__(self):
         placement_str=f"self.head = {self.head} == {self.body[0]}, first snake bit {self.body[1]}"
         return f'Hello! I am a snake named {self.name}, {self.size} blocks long, and collision is {self.collision}\nLocated: {placement_str}'
-        
-        
-            
+    
+    
     # @ property
     # property(fget=None, fset=None, fdel=None, doc=None)
     # 
@@ -725,6 +723,8 @@ class snake:
             mapscreen.attroff(curses.color_pair(4))
     
     def erase(self):
+        # TODO the execution order prevents this from doing its job
+        # Must sort out execution order
         """Ovewrwrites tail bit of self.body by 1 from zompy_map with intEmpt"""
         tail_x, tail_y = self.body[self.size-1]
         logging.debug(f"snek.erase(), snake is x={self.x}, y={self.y}, dir={self.dir}")
@@ -738,7 +738,7 @@ class snake:
         
         cell_content = map_lookup(tail_x, tail_y)
         assert type(cell_content) == tuple, f"snek.erase() Cell content at {tail_x}, {tail_y} not tuple but '{cell_content}'"
-        assert cell_content[0] == zompy_settings['intSnek'], f'snek.erase() The snake tail bit to erase() is not snake but {cell_content}.'
+        assert cell_content[0] == zompy_settings['intSnek'], f'snek.erase() tail to erase() is not snake but {cell_content}.'
         
         if cell_content[0] == zompy_settings['intSnek']:
             zompy_map[tail_x,tail_y] = (zompy_settings['intEmpt'],0)
