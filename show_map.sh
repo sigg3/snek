@@ -22,3 +22,11 @@ for y_val in $((y-2)) $((y-1)) $y $((y+1)) $((y+2)); do
   done
 done
 
+echo -en "\nSnake detected in sectors: "
+sed "s|),|\n|g" "$map" | tr -d "() " | grep ":-1" | sed "s|:| = |g" | wc -l
+
+echo -e "\nListing:"
+sed "s|),|\n|g" "$map" | tr -d "() " | grep ":-1" | sed "s|:| = |g"
+
+echo -e "\nDone."
+

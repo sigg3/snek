@@ -731,6 +731,9 @@ class snake:
         logging.debug(f"snek.erase() map value at ^ x,y == '{zompy_map[tail_x,tail_y]}'")
         
         
+        if zompy_settings['debug']:
+            with open("debug_map_final.txt", "w") as LOW_COST_DEBUGGER: print(zompy_map, file=LOW_COST_DEBUGGER)
+        
         cell_content = map_lookup(tail_x, tail_y)
         assert type(cell_content) == tuple, f"snek.erase() Cell content at {tail_x}, {tail_y} not tuple but '{cell_content}'"
         assert cell_content[0] == zompy_settings['intSnek'], f'snek.erase() The snake tail bit to erase() is not snake but {cell_content}.'
