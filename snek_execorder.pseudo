@@ -20,3 +20,16 @@ draw_map(screen)
 
 # curses action
 snek.draw(screen)
+
+if check_collision(snek):
+  
+  # true if snake was hit
+  if singleplayer:
+     game_over()
+
+else:
+  # get uinput
+  
+  snek.update_positions()  # <-- This is where we put snek on map :/
+  
+  
